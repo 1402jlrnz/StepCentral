@@ -2,6 +2,14 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const cloudinary = require('cloudinary');
+
+// Cloudinary config (product & avatar images)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const products = require('./routes/product');
 const auth = require('./routes/auth');
