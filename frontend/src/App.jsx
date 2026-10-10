@@ -10,6 +10,12 @@ import './App.css'
 import Home from './Components/Home'
 import ProductDetails from './Components/Product/ProductDetails';
 import Login from './Components/User/Login';
+import Register from './Components/User/Register';
+import Profile from './Components/User/Profile';
+import UpdateProfile from './Components/User/UpdateProfile';
+import UpdatePassword from './Components/User/UpdatePassword';
+import ForgotPassword from './Components/User/ForgotPassword';
+import NewPassword from './Components/User/NewPassword';
 import ProtectedRoute from './Components/Route/ProtectedRoute';
 
 import ProductsList from './Components/Admin/ProductsList';
@@ -37,6 +43,34 @@ function App() {
 
           <Route path="/search/:keyword" element={<Home />} exact="true" />
           <Route path="/login" element={<Login />} exact="true" />
+          <Route path="/register" element={<Register />} exact="true" />
+          <Route path="/password/forgot" element={<ForgotPassword />} exact="true" />
+          <Route path="/password/reset/:token" element={<NewPassword />} exact="true" />
+
+          <Route
+            path="/me"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/me/update"
+            element={
+              <ProtectedRoute>
+                <UpdateProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/password/update"
+            element={
+              <ProtectedRoute>
+                <UpdatePassword />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/admin/products"

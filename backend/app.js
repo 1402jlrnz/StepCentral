@@ -27,4 +27,23 @@ app.use('/api/v1', products);
 app.use('/api/v1', auth);
 app.use('/api/v1', order);
 
+// Global error handler — always respond with JSON so the frontend can toast the message
+app.use((err, req, res, next) => {
+    let message = err.message || 'Internal Server Error';
+
+    // Mongoose duplicate key (e.g. email already registered)
+    if (err.code === 11000) {
+        message = `${Object.keys(err.keyValue || { field: '' })[0]} already exists`;
+    }
+    // Mongoose validation error — show the first field error
+    if (err.name === 'ValidationError') {
+        message = Object.values(err.errors).map(e => e.message)[0];
+    }
+
+    res.status(err.statusCode || 500).json({
+        success: false,
+        message
+    });
+});
+
 module.exports = app;

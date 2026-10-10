@@ -3,21 +3,78 @@ const crypto = require('crypto')
 const cloudinary = require('cloudinary')
 const sendEmail = require('../utils/sendEmail')
 const sendToken = require('../utils/jwtToken');
+const getFirebaseAdmin = require('../utils/firebase');
+
+// Default avatar for Firebase-created accounts (same pattern as seeder)
+const defaultAvatar = async () => {
+    const svg = `data:image/svg+xml;base64,${Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="#232f3e"/><text x="50%" y="55%" font-size="60" font-family="Arial" fill="#febd69" text-anchor="middle" font-weight="bold">SC</text></svg>`
+    ).toString('base64')}`;
+    const result = await cloudinary.v2.uploader.upload(svg, { folder: 'avatars', width: 150, crop: 'scale' });
+    return { public_id: result.public_id, url: result.secure_url };
+};
+
+// Firebase Authentication (email/password via Firebase) =>  /api/v1/firebase-auth
+// Verifies the Firebase ID token, then creates/finds the local user and
+// issues the store's own JWT so the rest of the app works the same way.
+exports.firebaseAuth = async (req, res, next) => {
+    const { idToken, name } = req.body;
+
+    if (!idToken) {
+        return res.status(400).json({ message: 'Firebase ID token is required' })
+    }
+
+    const fbAdmin = getFirebaseAdmin();
+    if (!fbAdmin) {
+        return res.status(500).json({
+            message: 'Firebase is not configured on the server. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in backend/.env'
+        })
+    }
+
+    let decoded;
+    try {
+        decoded = await fbAdmin.auth().verifyIdToken(idToken);
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid or expired Firebase token' })
+    }
+
+    const email = decoded.email;
+    if (!email) {
+        return res.status(400).json({ message: 'Firebase account has no email address' })
+    }
+
+    let user = await User.findOne({ email });
+    if (!user) {
+        const avatar = await defaultAvatar();
+        user = await User.create({
+            name: name || decoded.name || email.split('@')[0],
+            email,
+            // random password: this account logs in through Firebase only
+            password: crypto.randomBytes(20).toString('hex'),
+            avatar,
+        })
+    }
+
+    sendToken(user, 200, res)
+}
 
 exports.registerUser = async (req, res, next) => {
-    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
-        folder: 'avatars',
-        width: 150,
-        crop: "scale"
-    });
     const { name, email, password, } = req.body;
+    // Upload chosen avatar, or fall back to the default SC avatar
+    const avatar = req.body.avatar
+        ? await cloudinary.v2.uploader.upload(req.body.avatar, {
+            folder: 'avatars',
+            width: 150,
+            crop: "scale"
+        })
+        : await defaultAvatar();
     const user = await User.create({
         name,
         email,
         password,
         avatar: {
-            public_id: result.public_id,
-            url: result.secure_url
+            public_id: avatar.public_id,
+            url: avatar.url || avatar.secure_url
         },
     })
     sendToken(user, 200, res)
@@ -126,8 +183,8 @@ exports.updateProfile = async (req, res, next) => {
         email: req.body.email
     }
 
-    // Update avatar
-    if (req.body.avatar !== '') {
+    // Update avatar (skip when the client sent no new image — avatar may be '' or undefined)
+    if (req.body.avatar) {
         let user = await User.findById(req.user.id)
         const image_id = user.avatar.public_id;
         await cloudinary.v2.uploader.destroy(image_id);

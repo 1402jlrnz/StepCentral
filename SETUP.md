@@ -29,14 +29,19 @@ node -e "console.log(require('crypto').randomBytes(40).toString('hex'))"
 ```
 Paste into `backend/.env` → `JWT_SECRET`
 
-## 5. Firebase (needed in Phase 2/5 — skip for now)
+## 5. Firebase (needed for Firebase login / Phase 2 & 5)
 1. Go to https://console.firebase.google.com → Add project (free, no Blaze plan needed)
-2. **Build → Authentication → Get started** → enable **Email/Password**, **Google**, **Facebook**
-3. **Project settings → Service accounts → Generate new private key**
+2. **Build → Authentication → Get started** → enable **Email/Password**, and (for Phase 5) **Google**, **Facebook**
+3. **Project settings → Your apps → Web app (</>)** → register app → copy the config values into `frontend/.env`:
+   - `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID`
+4. **Project settings → Service accounts → Generate new private key** → paste into `backend/.env`:
    - `project_id` → `FIREBASE_PROJECT_ID`
    - `client_email` → `FIREBASE_CLIENT_EMAIL`
    - `private_key` → `FIREBASE_PRIVATE_KEY` (keep the `\n` escapes, wrap in quotes)
-4. For Google/Facebook sign-in buttons you'll also need the web API config (we'll add `frontend/src/firebase.js` in Phase 2)
+
+Until step 4 is done, the "LOGIN/REGISTER WITH FIREBASE" buttons show a clear
+"Firebase is not configured" message — the rest of the site works normally.
+(Facebook login also needs an app secret in the Firebase console; we'll cover it in Phase 5.)
 
 ## Run
 ```bash

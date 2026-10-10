@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     registerUser,
     loginUser,
+    firebaseAuth,
     forgotPassword,
     resetPassword,
     getUserProfile,
@@ -19,6 +20,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth')
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/firebase-auth', firebaseAuth);
 router.post('/password/forgot', forgotPassword);
 router.put('/password/reset/:token', resetPassword);
 router.get('/me', isAuthenticatedUser, getUserProfile)
