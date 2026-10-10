@@ -1,0 +1,10 @@
+/* Step Central - global styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Amazon Ember', sans-serif;
+  margin: 0;
+  padding: 0;
+}
