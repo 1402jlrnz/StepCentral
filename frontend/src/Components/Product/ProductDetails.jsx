@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
 import { getProductDetails, createReview, getProductReviews, clearErrors } from '../../actions/productActions'
+import { addItemToCart } from '../../actions/cartActions'
 
 const ProductDetails = () => {
     const dispatch = useDispatch()
@@ -18,6 +19,7 @@ const ProductDetails = () => {
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState('')
     const [hoverRating, setHoverRating] = useState(0)
+    const [quantity, setQuantity] = useState(1)
 
     useEffect(() => {
         dispatch(getProductDetails(id))
@@ -35,6 +37,10 @@ const ProductDetails = () => {
             return
         }
         dispatch(createReview({ rating, comment, productId: id }))
+    }
+
+    const addToCart = () => {
+        dispatch(addItemToCart(id, quantity))
     }
 
     useEffect(() => {
@@ -80,15 +86,16 @@ const ProductDetails = () => {
                             <hr />
 
                             <div className="stockCounter d-inline">
-                                <span className="btn btn-outline-danger minus">-</span>
+                                <span className="btn btn-outline-danger minus" onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</span>
 
-                                <input type="number" className="form-control count d-inline" value="1" readOnly />
+                                <input type="number" className="form-control count d-inline" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
 
-                                <span className="btn btn-outline-success plus">+</span>
+                                <span className="btn btn-outline-success plus" onClick={() => setQuantity(q => Math.min(productDetails.stock, q + 1))}>+</span>
                             </div>
 
                             <button type="button" id="cart_btn" className="btn btn-primary d-inline ml-4"
-                                disabled={productDetails.stock === 0 ? true : false}>
+                                disabled={productDetails.stock === 0 ? true : false}
+                                onClick={addToCart}>
                                 Add to Cart
                             </button>
 

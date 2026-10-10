@@ -19,6 +19,14 @@ import {
 } from './reducers/userReducers'
 
 import { cartReducer } from './reducers/cartReducers';
+import {
+    newOrderReducer,
+    myOrdersReducer,
+    orderDetailsReducer,
+    allOrdersReducer,
+    updateOrderReducer,
+    deleteOrderReducer,
+} from './reducers/orderReducers'
 
 let initialState = {
     cart: {
@@ -47,7 +55,12 @@ const reducer = combineReducers({
     review: reviewReducer,
     allUsers: allUsersReducer,
     userDetails: userDetailsReducer,
-
+    newOrder: newOrderReducer,
+    myOrders: myOrdersReducer,
+    orderDetails: orderDetailsReducer,
+    allOrders: allOrdersReducer,
+    updateOrder: updateOrderReducer,
+    deleteOrder: deleteOrderReducer,
 })
 
 const middlware = [thunk]

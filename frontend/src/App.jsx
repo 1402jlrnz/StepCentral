@@ -22,6 +22,14 @@ import ProductsList from './Components/Admin/ProductsList';
 import NewProduct from './Components/Admin/NewProduct';
 import UpdateProduct from './Components/Admin/UpdateProduct';
 
+import Cart from './Components/Cart/Cart';
+import Shipping from './Components/Cart/Shipping';
+import ConfirmOrder from './Components/Cart/ConfirmOrder';
+import Payment from './Components/Cart/Payment';
+import OrderSuccess from './Components/Cart/OrderSuccess';
+import ListOrders from './Components/Order/ListOrders';
+import OrderDetails from './Components/Order/OrderDetails';
+
 import { useDispatch } from 'react-redux'
 import { loadUser } from './actions/userActions'
 
@@ -68,6 +76,63 @@ function App() {
             element={
               <ProtectedRoute>
                 <UpdatePassword />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shipping"
+            element={
+              <ProtectedRoute>
+                <Shipping />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/confirm"
+            element={
+              <ProtectedRoute>
+                <ConfirmOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <Payment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/success"
+            element={
+              <ProtectedRoute>
+                <OrderSuccess />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/me"
+            element={
+              <ProtectedRoute>
+                <ListOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order/:id"
+            element={
+              <ProtectedRoute>
+                <OrderDetails />
               </ProtectedRoute>
             }
           />
