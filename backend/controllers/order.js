@@ -383,3 +383,44 @@ exports.salesPerMonth = async (req, res, next) => {
         salesPerMonth
     })
 }
+
+// Product sales distribution (percentage per product)
+exports.productSales = async (req, res, next) => {
+    const productSales = await Order.aggregate([
+        { $unwind: "$orderItems" },
+        {
+            $group: {
+                _id: "$orderItems.name",
+                totalQuantity: { $sum: "$orderItems.quantity" },
+                totalRevenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalQuantity: { $sum: "$totalQuantity" },
+                items: { $push: { name: "$_id", quantity: "$totalQuantity", revenue: "$totalRevenue" } }
+            }
+        },
+        { $unwind: "$items" },
+        {
+            $project: {
+                name: "$items.name",
+                quantity: "$items.quantity",
+                revenue: "$items.revenue",
+                percent: {
+                    $multiply: [
+                        { $divide: ["$items.quantity", "$totalQuantity"] },
+                        100
+                    ]
+                }
+            }
+        },
+        { $sort: { percent: -1 } }
+    ])
+
+    res.status(200).json({
+        success: true,
+        totalPercentage: productSales
+    })
+}

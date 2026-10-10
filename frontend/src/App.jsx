@@ -21,6 +21,7 @@ import ProtectedRoute from './Components/Route/ProtectedRoute';
 import ProductsList from './Components/Admin/ProductsList';
 import NewProduct from './Components/Admin/NewProduct';
 import UpdateProduct from './Components/Admin/UpdateProduct';
+import Dashboard from './Components/Admin/Dashboard';
 
 import Cart from './Components/Cart/Cart';
 import Shipping from './Components/Cart/Shipping';
@@ -137,6 +138,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute isAdmin={true}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/products"
             element={
