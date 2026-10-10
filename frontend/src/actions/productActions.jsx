@@ -6,6 +6,13 @@ import {
     PRODUCT_DETAILS_REQUEST,
     PRODUCT_DETAILS_SUCCESS,
     PRODUCT_DETAILS_FAIL,
+    NEW_REVIEW_REQUEST,
+    NEW_REVIEW_SUCCESS,
+    NEW_REVIEW_RESET,
+    NEW_REVIEW_FAIL,
+    GET_REVIEWS_REQUEST,
+    GET_REVIEWS_SUCCESS,
+    GET_REVIEWS_FAIL,
 
     CLEAR_ERRORS
 } from '../constants/productConstants';
@@ -61,4 +68,44 @@ export const clearErrors = () => async (dispatch) => {
         type: CLEAR_ERRORS
 
     })
+}
+
+// Create a review
+export const createReview = (reviewData) => async (dispatch) => {
+    try {
+        dispatch({ type: NEW_REVIEW_REQUEST })
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            withCredentials: true,
+        }
+        const { data } = await axios.put(`${import.meta.env.VITE_API}/review`, reviewData, config)
+        dispatch({
+            type: NEW_REVIEW_SUCCESS,
+            payload: data.success
+        })
+    } catch (error) {
+        dispatch({
+            type: NEW_REVIEW_FAIL,
+            payload: error.response.data.message
+        })
+    }
+}
+
+// Get product reviews
+export const getProductReviews = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: GET_REVIEWS_REQUEST })
+        const { data } = await axios.get(`${import.meta.env.VITE_API}/reviews?id=${id}`)
+        dispatch({
+            type: GET_REVIEWS_SUCCESS,
+            payload: data.reviews
+        })
+    } catch (error) {
+        dispatch({
+            type: GET_REVIEWS_FAIL,
+            payload: error.response.data.message
+        })
+    }
 }

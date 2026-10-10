@@ -634,3 +634,33 @@ ul.CTAs a {
   height: 100px;
   object-fit: contain;
 }
+
+/* Star Rating for Reviews */
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.star-rating .star {
+  color: #e3e3e3;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.star-rating .star.filled {
+  color: #fa9c23;
+}
+
+.star-rating .star:hover {
+  transform: scale(1.2);
+}
+
+.review-card {
+  border: 1px solid #e3e3e3;
+  border-radius: 0.5rem;
+}
+
+.review-rating .text-warning {
+  color: #fa9c23 !important;
+}

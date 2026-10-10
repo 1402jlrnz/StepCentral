@@ -205,13 +205,20 @@ exports.getAdminProducts = async (req, res, next) => {
 
 }
 
+const filter = require('../utils/badWords');
+
 exports.createProductReview = async (req, res, next) => {
     const { rating, comment, productId } = req.body;
+    
+    // Apply bad-words filter to the comment
+    const cleanComment = filter.clean(comment);
+    console.log('[createProductReview] original:', comment, '-> clean:', cleanComment);
+    
     const review = {
         user: req.user._id,
         name: req.user.name,
         rating: Number(rating),
-        comment
+        comment: cleanComment
     }
     const product = await Product.findById(productId);
     const isReviewed = product.reviews.find(
@@ -220,7 +227,7 @@ exports.createProductReview = async (req, res, next) => {
     if (isReviewed) {
         product.reviews.forEach(review => {
             if (review.user.toString() === req.user._id.toString()) {
-                review.comment = comment;
+                review.comment = cleanComment;
                 review.rating = rating;
             }
         })
