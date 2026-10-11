@@ -6,6 +6,8 @@ import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 import MetaData from './Layout/MetaData'
 import Loader from './Layout/Loader';
+import HeroSection from './Hero/HeroSection';
+import '../HeroSection.css';
 import Pagination from '@mui/material/Pagination';
 import { Switch } from '@mui/material';
 
@@ -95,6 +97,10 @@ const Home = () => {
     return (
         <>
             <MetaData title={'Step Central | Buy Footwear'} />
+
+            {/* Design-only hero brand statement */}
+            <HeroSection />
+
             {loading && allProducts.length === 0 ? <Loader /> : (
                 <div className="container container-fluid">
                     <h1 id="products_heading">Latest Footwear</h1>
