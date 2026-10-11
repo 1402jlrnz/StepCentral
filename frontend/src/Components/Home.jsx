@@ -8,8 +8,6 @@ import MetaData from './Layout/MetaData'
 import Loader from './Layout/Loader';
 import HeroSection from './Hero/HeroSection';
 import '../HeroSection.css';
-import Pagination from '@mui/material/Pagination';
-import { Switch } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux'
 import { getProducts } from '../actions/productActions'
@@ -17,12 +15,9 @@ import { getProducts } from '../actions/productActions'
 const Home = () => {
     const [price, setPrice] = useState([1, 1000]);
     const [category, setCategory] = useState('')
-    const [currentPage, setCurrentPage] = useState(1)
-    const [infiniteScroll, setInfiniteScroll] = useState(false)
-    const [allProducts, setAllProducts] = useState([])
     let { keyword } = useParams();
     const dispatch = useDispatch();
-    const { loading, products, productsCount, resPerPage, filteredProductsCount } = useSelector(state => state.products);
+    const { loading, products: reduxProducts, productsCount, resPerPage, filteredProductsCount } = useSelector(state => state.products);
 
     const categories = [
         'Running',
@@ -35,7 +30,7 @@ const Home = () => {
         count = filteredProductsCount
     }
 
-    const handleChange = (event, newValue) => {
+    const handlePriceChange = (event, newValue) => {
         setPrice(newValue);
     };
 
@@ -43,14 +38,8 @@ const Home = () => {
         return `P${price.toString()}`;
     }
 
-    // Pagination mode: dispatch getProducts for current page
-    useEffect(() => {
-        if (!infiniteScroll) {
-            dispatch(getProducts(currentPage, keyword, price, category))
-        }
-    }, [dispatch, currentPage, keyword, price, category, infiniteScroll]);
-
     // Infinite scroll: load all products progressively
+    const [allProducts, setAllProducts] = useState([]);
     const observer = useRef(null);
     const loadMoreRef = useRef(null);
 
@@ -60,9 +49,13 @@ const Home = () => {
         dispatch(getProducts(nextPage, keyword, price, category));
     }, [dispatch, loading, allProducts.length, count, keyword, price, category, resPerPage]);
 
+    // Initial load
     useEffect(() => {
-        if (!infiniteScroll) return;
+        dispatch(getProducts(1, keyword, price, category));
+    }, [dispatch, keyword, price, category]);
 
+    // IntersectionObserver for infinite scroll
+    useEffect(() => {
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(
             (entries) => {
@@ -76,23 +69,18 @@ const Home = () => {
             observer.current.observe(loadMoreRef.current);
         }
         return () => { if (observer.current) observer.current.disconnect(); };
-    }, [infiniteScroll, loading, allProducts.length, count, loadMore]);
+    }, [loading, allProducts.length, count, loadMore]);
 
-    // Accumulate products in infinite scroll mode
+    // Accumulate products
     useEffect(() => {
-        if (infiniteScroll) {
-            // Only append new products if they're not already in the list
-            const existingIds = new Set(allProducts.map(p => p._id));
-            const newProducts = products.filter(p => !existingIds.has(p._id));
-            if (newProducts.length > 0) {
-                setAllProducts(prev => [...prev, ...newProducts]);
-            }
-        } else {
-            setAllProducts([]);
+        const existingIds = new Set(allProducts.map(p => p._id));
+        const newProducts = (reduxProducts || []).filter(p => !existingIds.has(p._id));
+        if (newProducts.length > 0) {
+            setAllProducts(prev => [...prev, ...newProducts]);
         }
-    }, [products, infiniteScroll]);
+    }, [reduxProducts]);
 
-    const displayProducts = infiniteScroll ? allProducts : products;
+    const displayProducts = allProducts.length > 0 ? allProducts : (reduxProducts || []);
 
     return (
         <>
@@ -111,7 +99,7 @@ const Home = () => {
                                     <Slider
                                         getAriaLabel={() => 'Price Filter'}
                                         value={price}
-                                        onChange={handleChange}
+                                        onChange={handlePriceChange}
                                         valueLabelDisplay="on"
                                         getAriaValueText={valuetext}
                                         min={1}
@@ -125,7 +113,7 @@ const Home = () => {
                                             <li
                                                 key={categoryName}
                                                 style={{ cursor: 'pointer', listStyle: 'none' }}
-                                                onClick={() => { setCategory(categoryName); setCurrentPage(1); }}
+                                                onClick={() => { setCategory(categoryName); }}
                                                 className={category === categoryName ? 'font-weight-bold' : ''}
                                             >
                                                 {categoryName}
@@ -134,7 +122,7 @@ const Home = () => {
                                     </ul>
                                     <button
                                         className="btn btn-block btn-secondary mt-3"
-                                        onClick={() => { setCategory(''); setPrice([1, 1000]); setCurrentPage(1); }}
+                                        onClick={() => { setCategory(''); setPrice([1, 1000]); }}
                                     >
                                         Clear Filters
                                     </button>
@@ -142,25 +130,6 @@ const Home = () => {
                             </div>
 
                             <div className="col-6 col-md-9">
-                                <div className="row mb-3">
-                                    <div className="col-6">
-                                        <label className="d-flex align-items-center">
-                                            <Switch
-                                                checked={infiniteScroll}
-                                                onChange={(e) => { setInfiniteScroll(e.target.checked); setCurrentPage(1); setAllProducts([]); }}
-                                                color="primary"
-                                                size="small"
-                                            />
-                                            <span className="ml-2">Infinite Scroll</span>
-                                        </label>
-                                    </div>
-                                    <div className="col-6 text-right">
-                                        <small className="text-muted">
-                                            Showing {displayProducts.length} of {count} products
-                                        </small>
-                                    </div>
-                                </div>
-
                                 <div className="row">
                                     {displayProducts.length === 0 ? (
                                         <div className="col-12"><h3>No products found</h3></div>
@@ -169,28 +138,7 @@ const Home = () => {
                                     ))}
                                 </div>
 
-                                {!infiniteScroll && resPerPage < count && (
-                                    <div className="d-flex justify-content-center mt-5">
-                                        <Stack spacing={2}>
-                                            <Pagination
-                                                count={Math.ceil(count / resPerPage)}
-                                                page={currentPage}
-                                                onChange={(event, value) => setCurrentPage(value)}
-                                                color="primary"
-                                                variant="outlined"
-                                                shape="rounded"
-                                                showFirstButton
-                                                showLastButton
-                                                size="large"
-                                                sx={{ backgroundColor: 'white' }}
-                                            />
-                                        </Stack>
-                                    </div>
-                                )}
-
-                                {infiniteScroll && (
-                                    <div ref={loadMoreRef} style={{ height: 20 }} />
-                                )}
+                                <div ref={loadMoreRef} style={{ height: 20 }} />
                             </div>
                         </div>
                     </section>
