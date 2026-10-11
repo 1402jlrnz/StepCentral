@@ -12,17 +12,28 @@ const getFirebaseAdmin = () => {
     if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
         return null;
     }
-    // .env stores the private key with literal \n sequences (two chars: backslash + n)
-    // Use regex /\\n/g (four backslashes in source = literal backslash-n in regex)
-    const pk = FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+    // Handle private key: .env stores literal \n sequences (two chars: backslash + n)
+    // Must replace literal backslash-n with actual newlines
+    let pk = FIREBASE_PRIVATE_KEY
+        .replace(/\\n/g, '\n')           // literal \n -> actual newline
+        .replace(/\\r/g, '')              // remove any carriage returns
+        .trim();
+    // Ensure proper PEM format with newlines around headers
+    let normalizedPk = pk
+        .replace(/-----BEGIN PRIVATE KEY-----\s*/, '-----BEGIN PRIVATE KEY-----\n')
+        .replace(/\s*-----END PRIVATE KEY-----/, '\n-----END PRIVATE KEY-----\n');
+    // Fix any remaining double newlines
+    normalizedPk = normalizedPk.replace(/\n{3,}/g, '\n\n');
+    console.log('[firebase.js] Private key normalized, length:', normalizedPk.length);
     try {
         initializeApp({
             credential: cert({
-                projectId: FIREBASE_PROJECT_ID,
-                clientEmail: FIREBASE_CLIENT_EMAIL,
-                privateKey: pk,
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey: normalizedPk,
             }),
         });
+        console.log('[firebase.js] Firebase admin initialized successfully');
     } catch (e) {
         console.error('[firebase.js] init error:', e.message);
         return null;
