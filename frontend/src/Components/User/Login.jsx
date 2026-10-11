@@ -111,6 +111,8 @@ const Login = () => {
                                     initialValues={{ email: '', password: '' }}
                                     validationSchema={loginSchema}
                                     onSubmit={onSubmit}
+                                    validateOnChange={false}
+                                    validateOnBlur={false}
                                 >
                                     {({ errors, touched, isSubmitting, setSubmitting }) => (
                                         <Form className="auth-form">

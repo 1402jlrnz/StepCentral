@@ -119,6 +119,8 @@ const Register = () => {
                         initialValues={{ name: '', email: '', password: '', confirmPassword: '' }}
                         validationSchema={registerSchema}
                         onSubmit={onSubmit}
+                        validateOnChange={false}
+                        validateOnBlur={false}
                     >
                         {({ errors, touched, isSubmitting, setSubmitting }) => (
                             <Form className="shadow-lg">
