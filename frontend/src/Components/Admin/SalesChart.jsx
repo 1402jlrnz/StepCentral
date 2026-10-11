@@ -60,6 +60,9 @@ const SalesChart = () => {
             </div>
 
             <div className="card-body">
+                {/* Error message */}
+                {error && <div className="alert alert-danger">{error}</div>}
+
                 {/* Date range filter */}
                 <form onSubmit={submitHandler} className="row mb-4">
                     <div className="col-md-4 mb-2">
