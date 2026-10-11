@@ -86,8 +86,7 @@ const Login = () => {
         if (isAuthenticated && redirect === 'shipping') {
             navigate(`/${redirect}`)
         }
-        else if (isAuthenticated)
-            navigate('/')
+        // Don't auto-redirect on /login or /register - let user access these pages
         if (error) {
             toast.error(error, { position: 'bottom-right' })
             dispatch(clearErrors())

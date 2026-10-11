@@ -39,14 +39,11 @@ const Register = () => {
 
     let navigate = useNavigate()
     useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/')
-        }
         if (error) {
             toast.error(error, { position: 'bottom-right' });
             dispatch(clearErrors());
         }
-    }, [error, navigate, isAuthenticated, dispatch])
+    }, [error, dispatch])
 
     // Formik submit handler for standard register
     const onSubmit = (values, { setSubmitting }) => {
