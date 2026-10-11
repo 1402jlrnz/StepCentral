@@ -122,7 +122,7 @@ const Register = () => {
                         validateOnChange={false}
                         validateOnBlur={false}
                     >
-                        {({ errors, touched, isSubmitting, setSubmitting }) => (
+                        {({ errors, touched, isSubmitting, setSubmitting, values }) => (
                             <Form className="shadow-lg">
                                 <h1 className="mb-3">Register</h1>
 
@@ -212,7 +212,7 @@ const Register = () => {
                                     id="firebase_register_button"
                                     type="button"
                                     className="btn btn-block py-2 btn-outline-danger"
-                                    onClick={(e) => firebaseRegisterHandler(e, { setSubmitting })}
+                                    onClick={(e) => firebaseRegisterHandler(e, { setSubmitting, values })}
                                     disabled={isSubmitting}
                                 >
                                     <i className="fa fa-google mr-2"></i> REGISTER WITH FIREBASE
@@ -225,7 +225,7 @@ const Register = () => {
                                             id="google_register_button"
                                             type="button"
                                             className="btn btn-block py-2 btn-outline-primary"
-                                            onClick={(e) => googleRegisterHandler(e, { setSubmitting })}
+                                            onClick={(e) => googleRegisterHandler(e, { setSubmitting, values })}
                                             disabled={isSubmitting}
                                         >
                                             <i className="fa fa-google mr-2"></i> CONTINUE WITH GOOGLE
@@ -234,7 +234,7 @@ const Register = () => {
                                             id="facebook_register_button"
                                             type="button"
                                             className="btn btn-block py-2 btn-primary mt-2"
-                                            onClick={(e) => facebookRegisterHandler(e, { setSubmitting })}
+                                            onClick={(e) => facebookRegisterHandler(e, { setSubmitting, values })}
                                             disabled={isSubmitting}
                                         >
                                             <i className="fa fa-facebook mr-2"></i> CONTINUE WITH FACEBOOK

@@ -38,18 +38,18 @@ const Login = () => {
     }
 
     // Login with Firebase Authentication (email + password)
-    const firebaseLoginHandler = async (e, { setSubmitting }) => {
+    const firebaseLoginHandler = async (e, formikHelpers) => {
         e.preventDefault()
 
         if (!isFirebaseConfigured) {
             toast.error('Firebase is not configured yet. Add VITE_FIREBASE_* keys to frontend/.env', {
                 position: 'bottom-right'
             })
-            setSubmitting(false)
+            formikHelpers.setSubmitting(false)
             return
         }
 
-        const { email, password } = Formik.getValues()
+        const { email, password } = formikHelpers.values;
         try {
             const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password)
             const idToken = await userCredential.user.getIdToken()
@@ -57,7 +57,7 @@ const Login = () => {
         } catch (err) {
             toast.error(err.message, { position: 'bottom-right' })
         } finally {
-            setSubmitting(false)
+            formikHelpers.setSubmitting(false)
         }
     }
 
@@ -114,7 +114,7 @@ const Login = () => {
                                     validateOnChange={false}
                                     validateOnBlur={false}
                                 >
-                                    {({ errors, touched, isSubmitting, setSubmitting }) => (
+                                    {({ errors, touched, isSubmitting, setSubmitting, values }) => (
                                         <Form className="auth-form">
                                             <div className="form-group">
                                                 <label htmlFor="email_field">Email</label>
@@ -166,7 +166,7 @@ const Login = () => {
                                                         id="google_login_button"
                                                         type="button"
                                                         className="btn btn-outline btn-block social-btn google-btn"
-                                                        onClick={(e) => googleLoginHandler(e, { setSubmitting })}
+                                                        onClick={(e) => googleLoginHandler(e, { setSubmitting, values })}
                                                         disabled={isSubmitting}
                                                     >
                                                         <svg className="social-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -181,7 +181,7 @@ const Login = () => {
                                                         id="facebook_login_button"
                                                         type="button"
                                                         className="btn btn-outline btn-block social-btn facebook-btn"
-                                                        onClick={(e) => facebookLoginHandler(e, { setSubmitting })}
+                                                        onClick={(e) => facebookLoginHandler(e, { setSubmitting, values })}
                                                         disabled={isSubmitting}
                                                     >
                                                         <svg className="social-icon" viewBox="0 0 24 24" aria-hidden="true">
