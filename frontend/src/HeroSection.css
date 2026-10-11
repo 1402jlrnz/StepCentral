@@ -59,6 +59,104 @@ nav {
   border-bottom: 1px solid var(--sc-border);
 }
 
+/* === Search bar — theme matched === */
+.input-group {
+  width: 90%;
+  margin-right: 35%;
+}
+
+#search_field {
+  height: 2.6rem;
+  padding: 0.4rem 1.1rem;
+  background-color: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  color: var(--sc-text);
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#search_field::placeholder {
+  color: var(--sc-text-dim);
+  letter-spacing: 0.02em;
+}
+
+#search_field:focus {
+  background-color: var(--sc-surface);
+  border-color: var(--sc-accent);
+  color: var(--sc-text);
+  box-shadow: 0 0 0 3px rgba(255, 59, 59, 0.15);
+  outline: none;
+}
+
+.input-group-append .btn {
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.4rem 1.1rem;
+}
+
+/* Brand text */
+.navbar-brand span {
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Cart link in navbar */
+.cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#cart {
+  color: var(--sc-text) !important;
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.cart-link:hover #cart {
+  color: var(--sc-accent) !important;
+  transform: scale(1.1);
+}
+
+#cart_count {
+  background-color: var(--sc-accent) !important;
+  color: #fff !important;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 1.25rem;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Product details back button */
+#back_btn {
+  border-color: var(--sc-border);
+  color: var(--sc-text-muted);
+  background-color: transparent;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 1rem;
+  transition: all 0.2s ease;
+}
+
+#back_btn:hover {
+  background-color: var(--sc-surface-2);
+  border-color: var(--sc-accent);
+  color: var(--sc-accent);
+}
+
+/* User dropdown toggle */
+.dropdown-toggle {
+  color: var(--sc-text) !important;
+}
+
 #search_btn {
   background-color: var(--sc-accent) !important;
   border-color: var(--sc-accent) !important;

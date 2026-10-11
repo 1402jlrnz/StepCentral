@@ -384,6 +384,58 @@ exports.salesPerMonth = async (req, res, next) => {
     })
 }
 
+// Sales by date range (for Quiz 2 date-range filter chart)  =>  /api/v1/admin/sales
+exports.salesByDateRange = async (req, res, next) => {
+    const { startDate, endDate } = req.query;
+
+    // Build date filter on paidAt
+    const match = {};
+    if (startDate || endDate) {
+        match.paidAt = {};
+        if (startDate) match.paidAt.$gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // include the whole end day
+            match.paidAt.$lte = end;
+        }
+    }
+
+    // Group sales by day
+    const sales = await Order.aggregate([
+        { $match: match },
+        {
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$paidAt" } },
+                total: { $sum: "$totalPrice" },
+                orders: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } },
+        {
+            $project: {
+                _id: 0,
+                date: "$_id",
+                total: 1,
+                orders: 1
+            }
+        }
+    ])
+
+    // Totals for the filtered range
+    const totals = sales.reduce((acc, day) => {
+        acc.total += day.total;
+        acc.orders += day.orders;
+        return acc;
+    }, { total: 0, orders: 0 })
+
+    res.status(200).json({
+        success: true,
+        sales,
+        totalSales: totals.total,
+        totalOrders: totals.orders
+    })
+}
+
 // Product sales distribution (percentage per product)
 exports.productSales = async (req, res, next) => {
     const productSales = await Order.aggregate([

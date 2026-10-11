@@ -12,6 +12,7 @@ const {
     totalSales,
     customerSales,
     salesPerMonth,
+    salesByDateRange,
     productSales,
 } = require('../controllers/order')
 
@@ -28,6 +29,7 @@ router.get('/admin/total-orders', isAuthenticatedUser, authorizeRoles('admin'), 
 router.get('/admin/total-sales', isAuthenticatedUser, authorizeRoles('admin'), totalSales);
 router.get('/admin/customer-sales', isAuthenticatedUser, authorizeRoles('admin'), customerSales);
 router.get('/admin/sales-per-month', isAuthenticatedUser, authorizeRoles('admin'), salesPerMonth);
+router.get('/admin/sales', isAuthenticatedUser, authorizeRoles('admin'), salesByDateRange);
 router.get('/admin/product-sales', isAuthenticatedUser, authorizeRoles('admin'), productSales);
 
 module.exports = router;

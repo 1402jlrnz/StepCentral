@@ -28,8 +28,9 @@ export const Header = () => {
                 <div className="col-12 col-md-3">
                     <div className="navbar-brand">
                         <Link to="/">
-                            <span style={{ color: '#febd69', fontSize: '1.6rem', fontWeight: 'bold', textDecoration: 'none' }}>
-                                Step Central
+                            <span style={{ fontSize: '1.6rem', fontWeight: 'bold', textDecoration: 'none' }}>
+                                <span style={{ color: '#ff3b3b' }}>Step</span>
+                                <span style={{ color: '#ffffff' }}>Central</span>
                             </span>
                         </Link>
 
@@ -71,8 +72,10 @@ export const Header = () => {
                         </div>
                     </div>) : <Link to="/login" className="btn ml-4" id="login_btn">Login</Link>}
 
-                    <Link to="/cart" style={{ textDecoration: 'none' }} >
-                        <span id="cart" className="ml-3">Cart</span>
+                    <Link to="/cart" style={{ textDecoration: 'none' }} className="cart-link">
+                        <span id="cart" className="ml-3">
+                            <i className="fa fa-shopping-cart" aria-hidden="true"></i>
+                        </span>
                         <span className="ml-1" id="cart_count">{cartItems ? cartItems.length : null}</span>
                     </Link>
                 </div>

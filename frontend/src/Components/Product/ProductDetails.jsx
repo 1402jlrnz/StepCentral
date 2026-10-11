@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
@@ -9,6 +11,7 @@ import { addItemToCart } from '../../actions/cartActions'
 
 const ProductDetails = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { product: productDetails, loading: productDetailsLoading } = useSelector(state => state.productDetails)
     const { user } = useSelector(state => state.auth)
     const { reviews, loading: reviewsLoading } = useSelector(state => state.productReviews)
@@ -39,7 +42,15 @@ const ProductDetails = () => {
         dispatch(createReview({ rating, comment, productId: id }))
     }
 
+    // Adding to cart requires login first
     const addToCart = () => {
+        if (!user) {
+            toast.info('Please login to add items to your cart', {
+                position: 'bottom-right'
+            })
+            navigate('/login?redirect=product/' + id)
+            return
+        }
         dispatch(addItemToCart(id, quantity))
     }
 
@@ -58,6 +69,20 @@ const ProductDetails = () => {
             {(productDetailsLoading || reviewsLoading) ? <Loader /> : (
                 <>
                     <MetaData title={productDetails.name} />
+
+                    {/* Back button */}
+                    <div className="container mt-3">
+                        <button
+                            id="back_btn"
+                            type="button"
+                            className="btn btn-outline-light btn-sm"
+                            onClick={() => navigate(-1)}
+                        >
+                            <i className="fa fa-arrow-left mr-2" aria-hidden="true"></i>
+                            Back
+                        </button>
+                    </div>
+
                     <div className="row f-flex justify-content-around">
                         <div className="col-12 col-lg-5 img-fluid" id="product_image">
                             <img src={productDetails.images && productDetails.images[0] ? productDetails.images[0].url : ''}
