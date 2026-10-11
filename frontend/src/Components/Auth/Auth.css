@@ -64,6 +64,11 @@
 
 .form-group {
   margin-bottom: 1.25rem;
+  margin-top: 1rem;  /* Added space above each form group */
+}
+
+.form-group:first-child {
+  margin-top: 0;  /* No extra space for the first field (Email) */
 }
 
 .form-group label {
