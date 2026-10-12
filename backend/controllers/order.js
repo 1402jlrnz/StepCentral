@@ -49,7 +49,8 @@ exports.newOrder = async (req, res, next) => {
             message: `Hi ${user.name},\n\nThank you for your order! Your order #${order._id} has been confirmed and is being processed.\n\nOrder Total: ₱${order.totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\nA PDF receipt is attached.\n\nThank you for shopping with Step Central!`,
             attachments: [{
                 filename: `receipt-${order._id}.pdf`,
-                content: pdfBuffer
+                content: pdfBuffer,
+                contentType: 'application/pdf'
             }]
         });
     } catch (emailError) {
