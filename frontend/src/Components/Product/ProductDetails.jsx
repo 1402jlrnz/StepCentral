@@ -8,6 +8,7 @@ import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
 import { getProductDetails, createReview, getProductReviews, clearErrors } from '../../actions/productActions'
 import { addItemToCart } from '../../actions/cartActions'
+import { formatPrice } from '../Utils/helpers'
 
 const ProductDetails = () => {
     const dispatch = useDispatch()
@@ -102,7 +103,7 @@ const ProductDetails = () => {
 
                             <hr />
 
-                            <p id="product_price">${productDetails.price}</p>
+                            <p id="product_price">₱{formatPrice(productDetails.price)}</p>
 
                             <hr />
 

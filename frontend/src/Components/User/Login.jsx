@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
@@ -14,7 +14,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import '../Auth/Auth.css'
 
 const Login = () => {
-    const { isAuthenticated, error, loading } = useSelector(state => state.auth)
+    const { isAuthenticated, error, loading, user } = useSelector(state => state.auth)
+    const [showPassword, setShowPassword] = useState(false)
     let navigate = useNavigate()
     let location = useLocation()
     const dispatch = useDispatch()
@@ -33,7 +34,7 @@ const Login = () => {
 
     // Formik submit handler
     const onSubmit = (values, { setSubmitting }) => {
-        dispatch(login(values.email, values.password))
+        dispatch(login(values.email.trim(), values.password))
         setSubmitting(false)
     }
 
@@ -83,15 +84,20 @@ const Login = () => {
     const facebookLoginHandler = (e, formikHelpers) => { e.preventDefault(); socialLoginHandler(facebookProvider, formikHelpers) }
 
     useEffect(() => {
-        if (isAuthenticated && redirect === 'shipping') {
-            navigate(`/${redirect}`)
+        if (isAuthenticated) {
+            if (redirect) {
+                navigate(`/${redirect}`)
+            } else if (user && user.role === 'admin') {
+                navigate('/dashboard')
+            } else {
+                navigate('/')
+            }
         }
-        // Don't auto-redirect on /login or /register - let user access these pages
         if (error) {
             toast.error(error, { position: 'bottom-right' })
             dispatch(clearErrors())
         }
-    }, [error, isAuthenticated, dispatch, navigate, redirect])
+    }, [error, isAuthenticated, user, dispatch, navigate, redirect])
 
     return (
         <>
@@ -130,13 +136,32 @@ const Login = () => {
 
                                             <div className="form-group">
                                                 <label htmlFor="password_field">Password</label>
-                                                <Field
-                                                    type="password"
-                                                    id="password_field"
-                                                    name="password"
-                                                    className={`form-control ${errors.password && touched.password ? 'is-invalid' : ''}`}
-                                                    placeholder="••••••••"
-                                                />
+                                                <div style={{ position: 'relative' }}>
+                                                    <Field
+                                                        type={showPassword ? "text" : "password"}
+                                                        id="password_field"
+                                                        name="password"
+                                                        className={`form-control ${errors.password && touched.password ? 'is-invalid' : ''}`}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            right: '12px',
+                                                            top: '50%',
+                                                            transform: 'translateY(-50%)',
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            color: '#6c757d',
+                                                            padding: '0'
+                                                        }}
+                                                    >
+                                                        <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
+                                                    </button>
+                                                </div>
                                                 <ErrorMessage name="password" component="div" className="invalid-feedback" />
                                             </div>
 

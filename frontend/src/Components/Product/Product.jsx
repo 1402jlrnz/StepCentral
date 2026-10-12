@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
+import { formatPrice } from '../Utils/helpers';
 
 const Product = ({ product }) => {
     return (
@@ -20,7 +21,7 @@ const Product = ({ product }) => {
                         </div>
                         <span id="no_of_reviews">({product.numOfReviews} reviews)</span>
                     </div>
-                    <p className="card-text">${product.price}</p>
+                    <p className="card-text">₱{formatPrice(product.price)}</p>
                     <Link to={`/product/${product._id}`} id="view_btn" className="btn btn-block">View Details</Link>
                 </div>
             </div>

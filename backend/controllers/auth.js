@@ -81,15 +81,20 @@ exports.registerUser = async (req, res, next) => {
 }
 
 exports.loginUser = async (req, res, next) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // Checks if email and password is entered by user
     if (!email || !password) {
         return res.status(400).json({ error: 'Please enter email & password' })
     }
 
-    // Finding user in database
-    let user = await User.findOne({ email }).select('+password')
+    email = email.trim();
+
+    // Finding user in database (case-insensitive)
+    let user = await User.findOne({
+        email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+    }).select('+password');
+
     if (!user) {
         return res.status(401).json({ message: 'Invalid Email or Password' })
     }
@@ -101,7 +106,7 @@ exports.loginUser = async (req, res, next) => {
         return res.status(401).json({ message: 'Invalid Email or Password' })
     }
 
-    user = await User.findOne({ email })
+    user.password = undefined;
     sendToken(user, 200, res)
 }
 

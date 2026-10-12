@@ -1,9 +1,13 @@
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 export const getUser = () => {
-    if (window !== 'undefined') {
+    if (typeof window !== 'undefined') {
         if (sessionStorage.getItem('user')) {
-            return JSON.parse(sessionStorage.getItem('user'));
+            try {
+                return JSON.parse(sessionStorage.getItem('user'));
+            } catch (e) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -11,25 +15,29 @@ export const getUser = () => {
 };
 
 export const authenticate = (data, next) => {
-    if (window !== 'undefined') {
+    if (typeof window !== 'undefined') {
         sessionStorage.setItem('token', JSON.stringify(data.token));
         sessionStorage.setItem('user', JSON.stringify(data.user));
     }
-    next();
+    if (next) next();
 };
 
 export const logout = next => {
-    if (window !== 'undefined') {
+    if (typeof window !== 'undefined') {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
     }
-    next();
+    if (next) next();
 };
 
 export const getToken = () => {
-    if (window !== 'undefined') {
+    if (typeof window !== 'undefined') {
         if (sessionStorage.getItem('token')) {
-            return JSON.parse(sessionStorage.getItem('token'));
+            try {
+                return JSON.parse(sessionStorage.getItem('token'));
+            } catch (e) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -42,3 +50,8 @@ export const errMsg = (message = '') => toast.error(message, {
 export const successMsg = (message = '') => toast.success(message, {
     position: 'bottom-center'
 });
+// Format a number as Philippine Peso (₱) with thousand separators
+export const formatPrice = (value) => {
+    const num = Number(value) || 0;
+    return num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};

@@ -38,8 +38,13 @@ let initialState = {
             : {}
     },
     user: {},
-    auth: {},
-
+    auth: {
+        user: typeof window !== 'undefined' && sessionStorage.getItem('user')
+            ? JSON.parse(sessionStorage.getItem('user'))
+            : null,
+        isAuthenticated: typeof window !== 'undefined' && !!sessionStorage.getItem('token'),
+        loading: false
+    },
 }
 
 const reducer = combineReducers({

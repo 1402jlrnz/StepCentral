@@ -33,11 +33,23 @@ const registerSchema = Yup.object().shape({
 
 const Register = () => {
     const dispatch = useDispatch()
-    const { isAuthenticated, error } = useSelector(state => state.auth);
+    const { isAuthenticated, user, error } = useSelector(state => state.auth);
     const [avatar, setAvatar] = useState('')
     const [avatarPreview, setAvatarPreview] = useState('/images/default_avatar.jpg')
 
     let navigate = useNavigate()
+
+    // Redirect after successful registration (mirrors Login.jsx behavior)
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            if (user.role === 'admin') {
+                navigate('/dashboard')
+            } else {
+                navigate('/')
+            }
+        }
+    }, [isAuthenticated, user, navigate])
+
     useEffect(() => {
         if (error) {
             toast.error(error, { position: 'bottom-right' });
@@ -50,6 +62,7 @@ const Register = () => {
         const userData = { name: values.name, email: values.email, password: values.password, avatar }
         dispatch(register(userData))
         setSubmitting(false)
+        toast.success('Account created successfully! Redirecting...', { position: 'bottom-right' })
     }
 
     // Register with Firebase Authentication (email + password)

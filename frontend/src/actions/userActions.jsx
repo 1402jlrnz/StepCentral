@@ -23,7 +23,9 @@ import {
     CLEAR_ERRORS
 } from '../constants/userConstants'
 
-import { authenticate } from '../Components/Utils/helpers'
+import { authenticate, getToken } from '../Components/Utils/helpers'
+
+const API = import.meta.env.VITE_API || 'http://localhost:4001/api/v1';
 
 export const register = (userData) => async (dispatch) => {
     try {
@@ -34,7 +36,7 @@ export const register = (userData) => async (dispatch) => {
             },
             withCredentials: true,
         }
-        const { data } = await axios.post(`${import.meta.env.VITE_API}/register`, userData, config)
+        const { data } = await axios.post(`${API}/register`, userData, config)
 
         authenticate(data, () => { })
 
@@ -60,7 +62,7 @@ export const login = (email, password) => async (dispatch) => {
             withCredentials: true,
         }
 
-        const { data } = await axios.post(`${import.meta.env.VITE_API}/login`, { email, password }, config)
+        const { data } = await axios.post(`${API}/login`, { email, password }, config)
 
         authenticate(data, () => { })
 
@@ -69,10 +71,11 @@ export const login = (email, password) => async (dispatch) => {
             payload: data.user
         })
     } catch (error) {
-
+        console.error('Login error details:', error);
+        const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Login failed';
         dispatch({
             type: LOGIN_FAIL,
-            payload: error.response.data.message
+            payload: message
         })
     }
 }
@@ -89,7 +92,7 @@ export const firebaseLogin = (idToken, name) => async (dispatch) => {
             withCredentials: true,
         }
 
-        const { data } = await axios.post(`${import.meta.env.VITE_API}/firebase-auth`, { idToken, name }, config)
+        const { data } = await axios.post(`${API}/firebase-auth`, { idToken, name }, config)
 
         authenticate(data, () => { })
 
@@ -115,14 +118,21 @@ export const logout = () => async (dispatch) => {
             },
             withCredentials: true,
         }
-        await axios.get(`${import.meta.env.VITE_API}/logout`, config)
+        await axios.get(`${API}/logout`, config)
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+        }
         dispatch({
             type: LOGOUT_SUCCESS,
         })
     } catch (error) {
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+        }
         dispatch({
-            type: LOGOUT_FAIL,
-            payload: error.response.data.message
+            type: LOGOUT_SUCCESS,
         })
     }
 }
@@ -135,7 +145,7 @@ export const forgotPassword = (email) => async (dispatch) => {
                 'Content-Type': 'application/json'
             }
         }
-        const { data } = await axios.post(`${import.meta.env.VITE_API}/password/forgot`, email, config)
+        const { data } = await axios.post(`${API}/password/forgot`, email, config)
         dispatch({
             type: FORGOT_PASSWORD_SUCCESS,
             payload: data.message
@@ -158,7 +168,7 @@ export const updatePassword = (passwords) => async (dispatch) => {
             },
             withCredentials: true,
         }
-        const { data } = await axios.put(`${import.meta.env.VITE_API}/password/update`, passwords, config)
+        const { data } = await axios.put(`${API}/password/update`, passwords, config)
         dispatch({
             type: UPDATE_PASSWORD_SUCCESS,
             payload: data.success
@@ -173,14 +183,26 @@ export const updatePassword = (passwords) => async (dispatch) => {
 
 export const loadUser = () => async (dispatch) => {
     try {
+        const token = getToken();
+        if (!token) {
+            dispatch({ type: LOAD_USER_FAIL, payload: null })
+            return;
+        }
+
+        dispatch({ type: LOAD_USER_REQUEST })
         const config = {
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             withCredentials: true,
         }
-        dispatch({ type: LOAD_USER_REQUEST })
-        const { data } = await axios.get(`${import.meta.env.VITE_API}/me`, config)
+        const { data } = await axios.get(`${API}/me`, config)
+
+        if (typeof window !== 'undefined' && data.user) {
+            sessionStorage.setItem('user', JSON.stringify(data.user));
+        }
+
         dispatch({
             type: LOAD_USER_SUCCESS,
             payload: data.user
@@ -188,7 +210,7 @@ export const loadUser = () => async (dispatch) => {
     } catch (error) {
         dispatch({
             type: LOAD_USER_FAIL,
-            payload: error.response.data.message
+            payload: error.response?.data?.message || null
         })
     }
 }
@@ -203,7 +225,7 @@ export const updateProfile = (userData) => async (dispatch) => {
             },
             withCredentials: true,
         }
-        const { data } = await axios.put(`${import.meta.env.VITE_API}/me/update`, userData, config)
+        const { data } = await axios.put(`${API}/me/update`, userData, config)
         dispatch({
             type: UPDATE_PROFILE_SUCCESS,
             payload: data.success

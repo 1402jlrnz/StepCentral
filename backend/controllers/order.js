@@ -46,7 +46,7 @@ exports.newOrder = async (req, res, next) => {
         await sendEmail({
             email: user.email,
             subject: `Step Central - Order Confirmation #${order._id}`,
-            message: `Hi ${user.name},\n\nThank you for your order! Your order #${order._id} has been confirmed and is being processed.\n\nOrder Total: $${order.totalPrice}\n\nA PDF receipt is attached.\n\nThank you for shopping with Step Central!`,
+            message: `Hi ${user.name},\n\nThank you for your order! Your order #${order._id} has been confirmed and is being processed.\n\nOrder Total: ₱${order.totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\nA PDF receipt is attached.\n\nThank you for shopping with Step Central!`,
             attachments: [{
                 filename: `receipt-${order._id}.pdf`,
                 content: pdfBuffer
@@ -128,8 +128,8 @@ async function generateOrderReceiptPDF(order, user) {
             doc.fontSize(9).fillColor('#000');
             doc.text(item.name.substring(0, 35), col1, y + 5);
             doc.text(item.quantity.toString(), col2, y + 5);
-            doc.text(`$${item.price.toFixed(2)}`, col3, y + 5);
-            doc.text(`$${(item.price * item.quantity).toFixed(2)}`, col4, y + 5);
+            doc.text(`₱${item.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, col3, y + 5);
+            doc.text(`₱${(item.price * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, col4, y + 5);
             y += 25;
         });
 
@@ -138,17 +138,17 @@ async function generateOrderReceiptPDF(order, user) {
         // Totals
         doc.fontSize(10).fillColor('#000');
         doc.text(`Subtotal:`, 350, y);
-        doc.text(`$${order.itemsPrice.toFixed(2)}`, 450, y);
+        doc.text(`₱${order.itemsPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
         y += 20;
         doc.text(`Shipping:`, 350, y);
-        doc.text(`$${order.shippingPrice.toFixed(2)}`, 450, y);
+        doc.text(`₱${order.shippingPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
         y += 20;
         doc.text(`Tax (5%):`, 350, y);
-        doc.text(`$${order.taxPrice.toFixed(2)}`, 450, y);
+        doc.text(`₱${order.taxPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
         y += 20;
         doc.fontSize(12).fillColor('#232f3e');
         doc.text(`Total:`, 350, y);
-        doc.text(`$${order.totalPrice.toFixed(2)}`, 450, y);
+        doc.text(`₱${order.totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
 
         y += 30;
 

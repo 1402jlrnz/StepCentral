@@ -4,6 +4,7 @@ import {
     CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { getToken } from '../Utils/helpers';
+import { formatPrice } from '../Utils/helpers';
 import axios from 'axios';
 import Loader from '../Layout/Loader';
 
@@ -98,7 +99,7 @@ const SalesChart = () => {
                 <div className="row mb-4">
                     <div className="col-md-6">
                         <div className="alert alert-success mb-0">
-                            <strong>Total Sales:</strong> ${totals.totalSales?.toFixed(2)}
+                            <strong>Total Sales:</strong> ₱{formatPrice(totals.totalSales)}
                         </div>
                     </div>
                     <div className="col-md-6">
@@ -128,7 +129,7 @@ const SalesChart = () => {
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#141414', border: '1px solid #262626', borderRadius: '8px' }}
                                         labelStyle={{ color: '#fafafa' }}
-                                        formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']}
+                                        formatter={(value) => [`₱${formatPrice(value)}`, 'Sales']}
                                     />
                                     <Legend />
                                     <Line
@@ -155,7 +156,7 @@ const SalesChart = () => {
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#141414', border: '1px solid #262626', borderRadius: '8px' }}
                                         labelStyle={{ color: '#fafafa' }}
-                                        formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']}
+                                        formatter={(value) => [`₱${formatPrice(value)}`, 'Sales']}
                                     />
                                     <Legend />
                                     <Bar dataKey="total" name="Sales ($)" fill="#ff3b3b" radius={[4, 4, 0, 0]} />

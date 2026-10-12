@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
 import { getOrderDetails } from '../../actions/orderActions'
+import { formatPrice } from '../Utils/helpers'
 
 const OrderDetails = () => {
     const dispatch = useDispatch();
@@ -43,7 +44,7 @@ const OrderDetails = () => {
                             <p><b>Name:</b> {user && user.name}</p>
                             <p><b>Phone:</b> {shippingInfo && shippingInfo.phoneNo}</p>
                             <p className="mb-4"><b>Address:</b>{shippingDetails}</p>
-                            <p><b>Amount:</b> ${totalPrice}</p>
+                            <p><b>Amount:</b> ₱{formatPrice(totalPrice)}</p>
 
                             <hr />
 
@@ -71,7 +72,7 @@ const OrderDetails = () => {
 
 
                                         <div className="col-4 col-lg-2 mt-4 mt-lg-0">
-                                            <p>${item.price}</p>
+                                            <p>₱{formatPrice(item.price)}</p>
                                         </div>
 
                                         <div className="col-4 col-lg-3 mt-4 mt-lg-0">

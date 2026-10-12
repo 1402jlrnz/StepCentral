@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getToken } from "../Utils/helpers";
+import { getToken, formatPrice } from "../Utils/helpers";
 import axios from "axios";
 import Loader from '../Layout/Loader';
 
@@ -35,7 +35,7 @@ export default function MonthlySalesChart() {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                             <YAxis />
-                            <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Total']} />
+                            <Tooltip formatter={(value) => [`₱${formatPrice(value)}`, 'Total']} />
                             <Legend />
                             <Line type="monotone" dataKey="total" stroke="#8884d8" strokeWidth={2} dot={{ r: 4 }} />
                         </LineChart>

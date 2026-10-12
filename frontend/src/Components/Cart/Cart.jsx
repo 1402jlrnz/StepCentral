@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import MetaData from '../Layout/MetaData'
 import { useDispatch, useSelector } from 'react-redux'
 import { addItemToCart, removeItemFromCart } from '../../actions/cartActions'
+import { formatPrice } from '../Utils/helpers'
 
 const Cart = () => {
     const dispatch = useDispatch();
@@ -55,7 +56,7 @@ const Cart = () => {
 
 
                                             <div className="col-4 col-lg-2 mt-4 mt-lg-0">
-                                                <p id="card_item_price">${item.price}</p>
+                                                <p id="card_item_price">₱{formatPrice(item.price)}</p>
                                             </div>
 
                                             <div className="col-4 col-lg-3 mt-4 mt-lg-0">
@@ -85,7 +86,7 @@ const Cart = () => {
                                 <h4>Order Summary</h4>
                                 <hr />
                                 <p>Subtotal:  <span className="order-summary-values">{cartItems.reduce((acc, item) => (acc + Number(item.quantity)), 0)} (Units)</span></p>
-                                <p>Est. total: <span className="order-summary-values">${cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0).toFixed(2)}</span></p>
+                                <p>Est. total: <span className="order-summary-values">₱{formatPrice(cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0))}</span></p>
 
 
                                 <hr />

@@ -4,6 +4,7 @@ import MetaData from '../Layout/MetaData'
 import CheckoutSteps from './CheckoutSteps'
 import { useDispatch, useSelector } from 'react-redux'
 import { createOrder, clearErrors } from '../../actions/orderActions'
+import { formatPrice } from '../Utils/helpers'
 
 const Payment = () => {
     const dispatch = useDispatch();
@@ -83,7 +84,7 @@ const Payment = () => {
                             type="submit"
                             className="btn btn-block py-3"
                         >
-                            Pay {` - ${orderInfo && orderInfo.totalPrice}`}
+                            Pay {` - ₱${formatPrice(orderInfo && orderInfo.totalPrice)}`}
                         </button>
 
                     </form>

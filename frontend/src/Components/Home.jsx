@@ -13,8 +13,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getProducts } from '../actions/productActions'
 
 const Home = () => {
-    const [price, setPrice] = useState([1, 1000]);
+    const [price, setPrice] = useState([1, 15000]);
     const [category, setCategory] = useState('')
+    const [ratings, setRatings] = useState(0)
     let { keyword } = useParams();
     const dispatch = useDispatch();
     const { loading, products: reduxProducts, productsCount, resPerPage, filteredProductsCount } = useSelector(state => state.products);
@@ -35,7 +36,7 @@ const Home = () => {
     };
 
     function valuetext(price) {
-        return `P${price.toString()}`;
+        return `₱${price.toString()}`;
     }
 
     // Infinite scroll: load all products progressively
@@ -46,13 +47,14 @@ const Home = () => {
     const loadMore = useCallback(() => {
         if (loading || allProducts.length >= count) return;
         const nextPage = Math.ceil(allProducts.length / resPerPage) + 1;
-        dispatch(getProducts(nextPage, keyword, price, category));
-    }, [dispatch, loading, allProducts.length, count, keyword, price, category, resPerPage]);
+        dispatch(getProducts(nextPage, keyword, price, category, ratings));
+    }, [dispatch, loading, allProducts.length, count, keyword, price, category, ratings, resPerPage]);
 
-    // Initial load
+    // Initial load - reset accumulated products when filters change
     useEffect(() => {
-        dispatch(getProducts(1, keyword, price, category));
-    }, [dispatch, keyword, price, category]);
+        setAllProducts([]);
+        dispatch(getProducts(1, keyword, price, category, ratings));
+    }, [dispatch, keyword, price, category, ratings]);
 
     // IntersectionObserver for infinite scroll
     useEffect(() => {
@@ -103,7 +105,7 @@ const Home = () => {
                                         valueLabelDisplay="on"
                                         getAriaValueText={valuetext}
                                         min={1}
-                                        max={1000}
+                                        max={15000}
                                     />
                                 </Box>
                                 <div className="mt-5">
@@ -120,13 +122,36 @@ const Home = () => {
                                             </li>
                                         ))}
                                     </ul>
-                                    <button
-                                        className="btn btn-block btn-secondary mt-3"
-                                        onClick={() => { setCategory(''); setPrice([1, 1000]); }}
-                                    >
-                                        Clear Filters
-                                    </button>
                                 </div>
+                                <div className="mt-4">
+                                    <h4 className="mb-3">Ratings</h4>
+                                    <ul className="pl-0">
+                                        {[4, 3, 2, 1].map(rating => (
+                                            <li
+                                                key={rating}
+                                                style={{ cursor: 'pointer', listStyle: 'none' }}
+                                                onClick={() => { setRatings(rating) }}
+                                                className={ratings === rating ? 'font-weight-bold' : ''}
+                                            >
+                                                {rating}★ &amp; up
+                                            </li>
+                                        ))}
+                                        {ratings > 0 && (
+                                            <li
+                                                style={{ cursor: 'pointer', listStyle: 'none', fontSize: '0.85rem', color: '#ff3b3b' }}
+                                                onClick={() => { setRatings(0) }}
+                                            >
+                                                Clear rating
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                                <button
+                                    className="btn btn-block btn-secondary mt-3"
+                                    onClick={() => { setCategory(''); setPrice([1, 15000]); setRatings(0); }}
+                                >
+                                    Clear Filters
+                                </button>
                             </div>
 
                             <div className="col-6 col-md-9">

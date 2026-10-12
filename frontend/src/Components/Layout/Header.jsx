@@ -1,19 +1,23 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../../actions/userActions'
-import { logout as clearSession } from '../Utils/helpers'
+import { logout as clearSession, getUser } from '../Utils/helpers'
 
 import Search from './Search'
 export const Header = () => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.auth)
     const { cartItems } = useSelector(state => state.cart)
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     let navigate = useNavigate()
 
+    const currentUser = (user && (user._id || user.name)) ? user : getUser();
+
     const logoutHandler = () => {
+        setDropdownOpen(false);
         dispatch(logout());
         clearSession(() => { })
         toast.success('Logged out', {
@@ -40,28 +44,37 @@ export const Header = () => {
                 <Search />
                 <div className="col-12 col-md-3 mt-4 mt-md-0 text-center">
 
-                    {user ? (<div className="ml-4 dropdown d-inline">
-                        <Link to="#!" className="btn dropdown-toggle text-white mr-4" type="button" id="dropDownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {currentUser ? (<div className="ml-4 dropdown d-inline">
+                        <Link
+                            to="#!"
+                            className="btn dropdown-toggle text-white mr-4"
+                            type="button"
+                            id="dropDownMenuButton"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded={dropdownOpen}
+                            onClick={(e) => { e.preventDefault(); setDropdownOpen(!dropdownOpen); }}
+                        >
                             <figure className="avatar avatar-nav">
                                 <img
-                                    src={user.avatar && user.avatar.url}
-                                    alt={user && user.name}
+                                    src={currentUser.avatar && (currentUser.avatar.url || currentUser.avatar.secure_url)}
+                                    alt={currentUser && currentUser.name}
                                     className="rounded-circle"
                                 />
                             </figure>
-                            <span>{user && user.name}</span>
+                            <span>{currentUser && currentUser.name}</span>
                         </Link>
 
-                        <div className="dropdown-menu" aria-labelledby="dropDownMenuButton">
-                            {user && user.role === 'admin' && (
+                        <div className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`} aria-labelledby="dropDownMenuButton">
+                            {currentUser && currentUser.role === 'admin' && (
                                 <>
-                                    <Link className="dropdown-item" to="/dashboard">Dashboard</Link>
-                                    <Link className="dropdown-item" to="/admin/products">All Products</Link>
-                                    <Link className="dropdown-item" to="/admin/product">Create Product</Link>
+                                    <Link className="dropdown-item" to="/dashboard" onClick={() => setDropdownOpen(false)}>Dashboard</Link>
+                                    <Link className="dropdown-item" to="/admin/products" onClick={() => setDropdownOpen(false)}>All Products</Link>
+                                    <Link className="dropdown-item" to="/admin/product" onClick={() => setDropdownOpen(false)}>Create Product</Link>
                                 </>
                             )}
-                            <Link className="dropdown-item" to="/orders/me">Orders</Link>
-                            <Link className="dropdown-item" to="/me">Profile</Link>
+                            <Link className="dropdown-item" to="/orders/me" onClick={() => setDropdownOpen(false)}>Orders</Link>
+                            <Link className="dropdown-item" to="/me" onClick={() => setDropdownOpen(false)}>Profile</Link>
 
                             <Link
                                 className="dropdown-item text-danger" to="/"

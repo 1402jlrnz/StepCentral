@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { getToken } from "../Utils/helpers";
+import { getToken, formatPrice } from "../Utils/helpers";
 import axios from "axios";
 import Loader from '../Layout/Loader';
 
@@ -36,7 +36,7 @@ const UserSalesChart = () => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="userDetails.name" tick={{ rotation: -45, fontSize: 11 }} />
                             <YAxis />
-                            <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Total']} />
+                            <Tooltip formatter={(value) => [`₱${formatPrice(value)}`, 'Total']} />
                             <Legend />
                             <Bar dataKey="total" name="Total Sales" stroke="#000" strokeWidth={2}>
                                 {sales.map((item, index) => (

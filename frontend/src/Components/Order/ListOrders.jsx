@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
 import { myOrders } from '../../actions/orderActions'
+import { formatPrice } from '../Utils/helpers'
 
 import {
 
@@ -72,7 +73,7 @@ const ListOrders = () => {
     const rows = orders.map(order => ({
         id: order._id,
         numOfItems: order.orderItems.length,
-        amount: `$${order.totalPrice}`,
+        amount: `₱${formatPrice(order.totalPrice)}`,
         status: order.orderStatus || ''
     }));
     useEffect(() => {
