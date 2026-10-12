@@ -4,6 +4,8 @@ import MetaData from '../Layout/MetaData'
 import { useDispatch, useSelector } from 'react-redux'
 import { addItemToCart, removeItemFromCart } from '../../actions/cartActions'
 import { formatPrice } from '../Utils/helpers'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './Checkout.css'
 
 const Cart = () => {
@@ -25,6 +27,9 @@ const Cart = () => {
 
     const removeCartItemHandler = (id) => {
         dispatch(removeItemFromCart(id))
+        toast.success('Item removed from cart', {
+            position: 'bottom-right'
+        })
     }
 
     const checkoutHandler = () => {

@@ -106,6 +106,11 @@ exports.loginUser = async (req, res, next) => {
         return res.status(401).json({ message: 'Invalid Email or Password' })
     }
 
+    // Block deactivated accounts
+    if (user.active === false) {
+        return res.status(403).json({ message: 'This account has been deactivated. Please contact support.' })
+    }
+
     user.password = undefined;
     sendToken(user, 200, res)
 }
@@ -270,11 +275,13 @@ exports.getUserDetails = async (req, res, next) => {
 }
 
 exports.updateUser = async (req, res, next) => {
-    const newUserData = {
-        name: req.body.name,
-        email: req.body.email,
-        role: req.body.role
-    }
+    const newUserData = {}
+
+    // Only update fields that were sent (allows activate/deactivate without touching name/email)
+    if (req.body.name !== undefined) newUserData.name = req.body.name
+    if (req.body.email !== undefined) newUserData.email = req.body.email
+    if (req.body.role !== undefined) newUserData.role = req.body.role
+    if (req.body.active !== undefined) newUserData.active = req.body.active
 
     const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
         new: true,

@@ -53,6 +53,9 @@ const ProductDetails = () => {
             return
         }
         dispatch(addItemToCart(id, quantity))
+        toast.success(`${productDetails.name} added to cart!`, {
+            position: 'bottom-right'
+        })
     }
 
     useEffect(() => {

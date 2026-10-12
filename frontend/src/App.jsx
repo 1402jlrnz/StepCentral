@@ -22,6 +22,8 @@ import ProductsList from './Components/Admin/ProductsList';
 import NewProduct from './Components/Admin/NewProduct';
 import UpdateProduct from './Components/Admin/UpdateProduct';
 import Dashboard from './Components/Admin/Dashboard';
+import AdminOrders from './Components/Admin/AdminOrders';
+import AdminUsers from './Components/Admin/AdminUsers';
 
 import Cart from './Components/Cart/Cart';
 import Shipping from './Components/Cart/Shipping';
@@ -143,6 +145,22 @@ function App() {
             element={
               <ProtectedRoute isAdmin={true}>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute isAdmin={true}>
+                <AdminOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute isAdmin={true}>
+                <AdminUsers />
               </ProtectedRoute>
             }
           />
