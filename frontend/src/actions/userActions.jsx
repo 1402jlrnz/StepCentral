@@ -24,6 +24,7 @@ import {
 } from '../constants/userConstants'
 
 import { authenticate, getToken } from '../Components/Utils/helpers'
+import { CLEAR_CART } from '../constants/cartConstants'
 
 const API = import.meta.env.VITE_API || 'http://localhost:4001/api/v1';
 
@@ -119,22 +120,24 @@ export const logout = () => async (dispatch) => {
             withCredentials: true,
         }
         await axios.get(`${API}/logout`, config)
-        if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
-        }
-        dispatch({
-            type: LOGOUT_SUCCESS,
-        })
     } catch (error) {
-        if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
-        }
-        dispatch({
-            type: LOGOUT_SUCCESS,
-        })
+        // Ignore logout API errors — still clear local session below
     }
+
+    if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        // Clear cart so the next login doesn't inherit the previous user's cart
+        localStorage.removeItem('cartItems');
+        localStorage.removeItem('shippingInfo');
+    }
+
+    dispatch({
+        type: CLEAR_CART,
+    })
+    dispatch({
+        type: LOGOUT_SUCCESS,
+    })
 }
 
 export const forgotPassword = (email) => async (dispatch) => {

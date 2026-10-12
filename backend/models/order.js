@@ -59,6 +59,10 @@ const orderSchema = mongoose.Schema({
         },
         status: {
             type: String
+        },
+        method: {
+            type: String,
+            default: 'COD'
         }
     },
     paidAt: {

@@ -43,11 +43,15 @@ const UpdateProduct = () => {
     const getProductDetails = async (id) => {
         try {
             const { data } = await axios.get(`${import.meta.env.VITE_API}/product/${id}`)
-            setProduct(data.product)
+            if (data.success) {
+                setProduct(data.product)
+            } else {
+                setError(data.message || 'Failed to load product')
+            }
             setLoading(false)
 
         } catch (error) {
-            setError(error.response.data.message)
+            setError(error?.response?.data?.message || 'Failed to load product')
 
         }
     }
@@ -64,21 +68,22 @@ const UpdateProduct = () => {
             setIsUpdated(data.success)
 
         } catch (error) {
-            setUpdateError(error.response.data.message)
+            setUpdateError(error?.response?.data?.message || 'Update failed')
 
         }
     }
     useEffect(() => {
-        if (product && product._id !== id) {
-            getProductDetails(id)
-        } else {
+        if (product && product._id === id) {
             setName(product.name);
             setPrice(product.price);
             setDescription(product.description);
             setCategory(product.category);
             setSeller(product.seller);
             setStock(product.stock)
-            setOldImages(product.images)
+            setOldImages(product.images || [])
+        } else if (!error) {
+            // Only fetch when we don't already have the product (and no error yet)
+            getProductDetails(id)
         }
         if (error) {
             errMsg(error)
@@ -97,6 +102,7 @@ const UpdateProduct = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
+        if (!product || !product._id) return;
         const formData = new FormData();
         formData.set('name', name);
         formData.set('price', price);

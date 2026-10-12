@@ -75,7 +75,7 @@ const NewProduct = () => {
             const { data } = await axios.post(`${import.meta.env.VITE_API}/admin/product/new`, formData, config)
             setSuccess(data.success)
         } catch (error) {
-            setError(error.response.data.message)
+            setError(error?.response?.data?.message || 'Failed to create product')
 
         }
     }

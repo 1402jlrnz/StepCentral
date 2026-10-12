@@ -28,6 +28,10 @@
   /* Legacy aliases — so old rules keep working */
   --sc-navy: var(--sc-bg);
   --sc-gold: var(--sc-accent);
+
+  /* Typography */
+  --sc-font: 'Amazon Ember', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --sc-font-display: 'Arial Black', 'Amazon Ember', Impact, sans-serif;
 }
 
 /* Apply base colors to html/body */
@@ -35,6 +39,7 @@ html,
 body {
   background-color: var(--sc-bg);
   color: var(--sc-text);
+  font-family: var(--sc-font);
 }
 
 /* Dark scrollbar to match */
@@ -73,16 +78,20 @@ nav {
   border-right: none;
   border-radius: 0.5rem 0 0 0.5rem;
   color: var(--sc-text);
-  font-family: 'Amazon Ember', Arial, sans-serif;
+  font-family: var(--sc-font);
   font-size: 0.95rem;
-  letter-spacing: 0.01em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   box-shadow: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #search_field::placeholder {
   color: var(--sc-text-dim);
-  letter-spacing: 0.02em;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
 #search_field:focus {
@@ -100,7 +109,7 @@ nav {
 
 /* Brand text */
 .navbar-brand span {
-  font-family: 'Amazon Ember', Arial, sans-serif;
+  font-family: var(--sc-font);
   letter-spacing: -0.01em;
 }
 

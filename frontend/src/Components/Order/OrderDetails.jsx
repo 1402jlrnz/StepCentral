@@ -49,7 +49,10 @@ const OrderDetails = () => {
                             <hr />
 
                             <h4 className="my-4">Payment</h4>
-                            <p className={isPaid ? "greenColor" : "redColor"}><b>{isPaid ? "PAID" : "NOT PAID"}</b></p>
+                            <p className={isPaid ? "greenColor" : "redColor"}>
+                                <b>{isPaid ? "PAID" : "NOT PAID"}</b>
+                                {paymentInfo && paymentInfo.method ? ` (${paymentInfo.method})` : ''}
+                            </p>
 
 
                             <h4 className="my-4">Order Status:</h4>
