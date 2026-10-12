@@ -645,7 +645,13 @@ ul.CTAs a {
 
 .star-rating .star {
   color: #e3e3e3;
-  transition: color 0.2s, transform 0.1s;
+  display: inline-block;
+  line-height: 1;
+  user-select: none;
+  /* NOTE: no transform transitions here — scaling the star under the
+     cursor makes the pointer enter/leave repeatedly, which causes a
+     visible flicker. Use glow/color hover instead (layout-safe). */
+  transition: color 0.2s, text-shadow 0.2s;
 }
 
 .star-rating .star.filled {
@@ -653,7 +659,8 @@ ul.CTAs a {
 }
 
 .star-rating .star:hover {
-  transform: scale(1.2);
+  color: var(--sc-accent, #fa9c23);
+  text-shadow: 0 0 14px rgba(255, 59, 59, 0.55);
 }
 
 .review-card {
