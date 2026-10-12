@@ -1,40 +1,40 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import './Checkout.css'
 
 const CheckoutSteps = ({ shipping, confirmOrder, payment }) => {
+    const steps = [
+        { label: 'Shipping', active: !!shipping, to: '/shipping' },
+        { label: 'Confirm Order', active: !!confirmOrder, to: '/confirm' },
+        { label: 'Payment', active: !!payment, to: '/payment' },
+    ]
+
     return (
-        <div className="checkout-progress d-flex justify-content-center mt-5">
+        <div className="checkout-steps">
+            {steps.map((step, index) => {
+                // Steps before the active one are "done"
+                const firstActiveIndex = steps.findIndex(s => s.active)
+                const isDone = !step.active && index < firstActiveIndex
 
-            {shipping ? <Link to='shipping' className="float-right">
-                <div className="triangle2-active"></div>
-                <div className="step active-step">Shipping</div>
-                <div className="triangle-active"></div>
-            </Link> : <Link to="#!" disabled>
-                <div className="triangle2-incomplete"></div>
-                <div className="step incomplete">Shipping</div>
-                <div className="triangle-incomplete"></div>
-            </Link>}
-
-            {confirmOrder ? <Link to='/confirm' className="float-right">
-                <div className="triangle2-active"></div>
-                <div className="step active-step">Confirm Order</div>
-                <div className="triangle-active"></div>
-            </Link> : <Link to="#!" disabled>
-                <div className="triangle2-incomplete"></div>
-                <div className="step incomplete">Confirm Order</div>
-                <div className="triangle-incomplete"></div>
-            </Link>}
-
-            {payment ? <Link to='/payment' className="float-right">
-                <div className="triangle2-active"></div>
-                <div className="step active-step">Payment</div>
-                <div className="triangle-active"></div>
-            </Link> : <Link to="#!" disabled>
-                <div className="triangle2-incomplete"></div>
-                <div className="step incomplete">Payment</div>
-                <div className="triangle-incomplete"></div>
-            </Link>}
-
+                return (
+                    <React.Fragment key={step.label}>
+                        {index > 0 && <div className="step-line" />}
+                        <div className={`step-item ${step.active ? 'active' : ''} ${isDone ? 'done' : ''}`}>
+                            {step.active ? (
+                                <span className="step-link">
+                                    <span className="step-num">{isDone ? '✓' : index + 1}</span>
+                                    <span className="step-label">{step.label}</span>
+                                </span>
+                            ) : (
+                                <Link to={step.to} className="step-link">
+                                    <span className="step-num">{index + 1}</span>
+                                    <span className="step-label">{step.label}</span>
+                                </Link>
+                            )}
+                        </div>
+                    </React.Fragment>
+                )
+            })}
         </div>
     )
 }

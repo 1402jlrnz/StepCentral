@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import MetaData from '../Layout/MetaData'
 import { useDispatch } from 'react-redux'
 import { clearCart } from '../../actions/cartActions';
+import './Checkout.css'
 
 const OrderSuccess = () => {
     const dispatch = useDispatch();
-    
+
     useEffect(() => {
         localStorage.clear();
         sessionStorage.removeItem('orderInfo')
@@ -15,20 +16,24 @@ const OrderSuccess = () => {
 
     return (
         <>
-
             <MetaData title={'Order Success'} />
+            <div className="checkout-page">
+                <div className="checkout-container">
+                    <div className="success-card">
+                        <div className="success-icon">
+                            <i className="fa fa-check" aria-hidden="true"></i>
+                        </div>
 
-            <div className="row justify-content-center">
-                <div className="col-6 mt-5 text-center">
-                    <img className="my-5 img-fluid d-block mx-auto" src="/images/order_success.png" alt="Order Success" width="200" height="200" />
+                        <h2>Order Placed!</h2>
+                        <p>Your order has been placed successfully.<br />A confirmation email with your PDF receipt is on its way.</p>
 
-                    <h2>Your Order has been placed successfully.</h2>
-
-                    <Link to="/orders/me">Go to Orders</Link>
+                        <div className="success-actions">
+                            <Link to="/orders/me" className="checkout-btn">Go to Orders</Link>
+                            <Link to="/" className="checkout-btn checkout-btn-secondary">Continue Shopping</Link>
+                        </div>
+                    </div>
                 </div>
-
             </div>
-
         </>
     )
 }
