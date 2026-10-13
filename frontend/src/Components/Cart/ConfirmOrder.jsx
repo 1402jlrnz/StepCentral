@@ -1,5 +1,13 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    Button,
+    Divider
+} from '@mui/material'
 import MetaData from '../Layout/MetaData'
 import CheckoutSteps from './CheckoutSteps'
 import { useSelector } from 'react-redux'
@@ -36,88 +44,113 @@ const ConfirmOrder = () => {
                 <div className="checkout-container">
                     <CheckoutSteps shipping confirmOrder />
 
-                    <h1 className="checkout-title">Confirm <span>Order</span></h1>
+                    <Typography variant="h3" className="checkout-title">Confirm Order</Typography>
                     <p className="checkout-subtitle">Review your delivery details and items before payment.</p>
 
-                    <div className="row d-flex justify-content-between">
-                        <div className="col-12 col-lg-8">
-                            <div className="checkout-card">
-                                <h3 className="checkout-card-header">Shipping Info</h3>
-                                <div className="info-grid">
-                                    {user && (
-                                        <p>
-                                            <b>Name</b>
-                                            {user.name}
-                                        </p>
-                                    )}
-                                    <p>
-                                        <b>Phone</b>
-                                        {shippingInfo.phoneNo}
-                                    </p>
-                                    <p style={{ gridColumn: '1 / -1' }}>
-                                        <b>Address</b>
-                                        {`${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}, ${shippingInfo.country}`}
-                                    </p>
-                                </div>
-                            </div>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Card>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Typography variant="h5" sx={{ mb: 2 }}>Shipping Info</Typography>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                                        {user && (
+                                            <Box>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Name</Typography>
+                                                <Typography>{user.name}</Typography>
+                                            </Box>
+                                        )}
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Phone</Typography>
+                                            <Typography>{shippingInfo.phoneNo}</Typography>
+                                        </Box>
+                                        <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">Address</Typography>
+                                            <Typography>{`${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}, ${shippingInfo.country}`}</Typography>
+                                        </Box>
+                                    </Box>
+                                </CardContent>
+                            </Card>
 
-                            <div className="checkout-card">
-                                <h3 className="checkout-card-header">Your Cart Items</h3>
+                            <Card>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Typography variant="h5" sx={{ mb: 1 }}>Your Cart Items</Typography>
 
-                                {cartItems.map(item => (
-                                    <div className="confirm-item" key={item.product}>
-                                        <img src={item.image} alt={item.name} className="confirm-item-img" />
+                                    {cartItems.map(item => (
+                                        <Box
+                                            key={item.product}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                py: 1.25,
+                                                borderBottom: '1px solid #262626',
+                                                '&:last-child': { borderBottom: 'none' }
+                                            }}
+                                        >
+                                            <Box
+                                                component="img"
+                                                src={item.image}
+                                                alt={item.name}
+                                                sx={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 1, border: '1px solid #262626' }}
+                                            />
+                                            <Typography
+                                                component={Link}
+                                                to={`/product/${item.product}`}
+                                                sx={{ flex: 1, color: '#fafafa', fontWeight: 600, textDecoration: 'none', '&:hover': { color: '#ff3b3b' } }}
+                                            >
+                                                {item.name}
+                                            </Typography>
+                                            <Typography color="text.secondary" variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+                                                {item.quantity} × ₱{formatPrice(item.price)}
+                                            </Typography>
+                                            <Typography fontWeight={700} sx={{ whiteSpace: 'nowrap', minWidth: 90, textAlign: 'right' }}>
+                                                ₱{formatPrice(item.quantity * item.price)}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        </Box>
 
-                                        <Link to={`/product/${item.product}`} className="confirm-item-name">
-                                            {item.name}
-                                        </Link>
+                        <Box sx={{ width: { xs: '100%', lg: 340 } }}>
+                            <Card sx={{ p: 3, position: { lg: 'sticky' }, top: { lg: 100 } }}>
+                                <Typography variant="h5" sx={{ mb: 2 }}>Order Summary</Typography>
 
-                                        <span className="confirm-item-qty">
-                                            {item.quantity} × ₱{formatPrice(item.price)}
-                                        </span>
-
-                                        <span className="confirm-item-total">
-                                            ₱{formatPrice(item.quantity * item.price)}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="col-12 col-lg-4 mt-4 mt-lg-0">
-                            <div className="checkout-summary">
-                                <h4>Order Summary</h4>
-
-                                <p className="summary-line">
-                                    <span>Subtotal</span>
-                                    <span className="order-summary-values">₱{formatPrice(itemsPrice)}</span>
-                                </p>
-                                <p className="summary-line">
-                                    <span>Shipping</span>
-                                    <span className="order-summary-values">
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
+                                    <Typography color="text.secondary">Subtotal</Typography>
+                                    <Typography fontWeight={700}>₱{formatPrice(itemsPrice)}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
+                                    <Typography color="text.secondary">Shipping</Typography>
+                                    <Typography fontWeight={700} sx={{ color: shippingPrice === 0 ? '#22c55e' : 'inherit' }}>
                                         {shippingPrice === 0 ? 'FREE' : `₱${formatPrice(shippingPrice)}`}
-                                    </span>
-                                </p>
-                                <p className="summary-line">
-                                    <span>Tax</span>
-                                    <span className="order-summary-values">₱{formatPrice(taxPrice)}</span>
-                                </p>
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
+                                    <Typography color="text.secondary">Tax</Typography>
+                                    <Typography fontWeight={700}>₱{formatPrice(taxPrice)}</Typography>
+                                </Box>
 
-                                <hr className="summary-divider" />
+                                <Divider sx={{ my: 2 }} />
 
-                                <p className="summary-total">
-                                    <span>Total</span>
-                                    <span className="order-summary-values">₱{formatPrice(totalPrice)}</span>
-                                </p>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                    <Typography variant="h6">Total</Typography>
+                                    <Typography variant="h5" sx={{ color: '#ff3b3b', fontWeight: 800 }}>₱{formatPrice(totalPrice)}</Typography>
+                                </Box>
 
-                                <hr className="summary-divider" />
+                                <Divider sx={{ my: 2 }} />
 
-                                <button id="checkout_btn" className="checkout-btn" onClick={processToPayment}>
+                                <Button
+                                    id="checkout_btn"
+                                    variant="contained"
+                                    fullWidth
+                                    onClick={processToPayment}
+                                >
                                     Proceed to Payment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                </Button>
+                            </Card>
+                        </Box>
+                    </Box>
                 </div>
             </div>
         </>

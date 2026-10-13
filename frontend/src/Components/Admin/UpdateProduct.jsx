@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import MetaData from '../Layout/MetaData'
 import Sidebar from './SideBar'
+import { TextField, MenuItem, Button } from '@mui/material'
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -145,52 +146,71 @@ const UpdateProduct = () => {
                                 <h1 className="mb-4">Update Product</h1>
                                 <div className="form-group">
                                     <label htmlFor="name_field">Name</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="name_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="price_field">Price</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="price_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={price}
                                         onChange={(e) => setPrice(e.target.value)}
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="description_field">Description</label>
-                                    <textarea className="form-control" id="description_field" rows="8" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
+                                    <TextField
+                                        multiline
+                                        rows={8}
+                                        id="description_field"
+                                        size="small"
+                                        fullWidth
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="category_field">Category</label>
-                                    <select className="form-control" id="category_field" value={category} onChange={(e) => setCategory(e.target.value)}>
+                                    <TextField
+                                        select
+                                        id="category_field"
+                                        size="small"
+                                        fullWidth
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                    >
                                         {categories.map(category => (
-                                            <option key={category} value={category} >{category}</option>
+                                            <MenuItem key={category} value={category} >{category}</MenuItem>
                                         ))}
-                                    </select>
+                                    </TextField>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="stock_field">Stock</label>
-                                    <input
+                                    <TextField
                                         type="number"
                                         id="stock_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={stock}
                                         onChange={(e) => setStock(e.target.value)}
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="seller_field">Seller Name</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="seller_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={seller}
                                         onChange={(e) => setSeller(e.target.value)}
                                     />
@@ -217,14 +237,16 @@ const UpdateProduct = () => {
                                         <img src={img} key={img} alt="Images Preview" className="mt-3 mr-2" width="55" height="52" />
                                     ))}
                                 </div>
-                                <button
+                                <Button
                                     id="login_button"
                                     type="submit"
-                                    className="btn btn-block py-3"
-                                    disabled={loading ? true : false}
+                                    variant="contained"
+                                    fullWidth
+                                    size="large"
+                                    disabled={loading}
                                 >
                                     UPDATE
-                                </button>
+                                </Button>
                             </form>
                         </div>
                     </>

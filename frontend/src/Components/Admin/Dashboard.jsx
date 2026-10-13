@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    CardActionArea,
+    Grid
+} from '@mui/material'
 
 import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
@@ -15,6 +23,9 @@ import SalesChart from './SalesChart';
 
 const Dashboard = () => {
     const [products, setProducts] = useState([])
+    const [ordersCount, setOrdersCount] = useState(0)
+    const [usersCount, setUsersCount] = useState(0)
+    const [totalSales, setTotalSales] = useState(0)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
     let outOfStock = 0;
@@ -34,12 +45,65 @@ const Dashboard = () => {
             setProducts(data.products)
             setLoading(false)
         } catch (error) {
-            setError(error.response.data.message)
+            setError(error?.response?.data?.message || 'Failed to load dashboard data')
         }
     }
+
+    const loadDashboardStats = async () => {
+        try {
+            const config = { headers: { 'Authorization': `Bearer ${getToken()}` } }
+            const [orders, users, sales] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API}/admin/orders`, { ...config, withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_API}/admin/users`, { ...config, withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_API}/admin/total-sales`, { ...config, withCredentials: true })
+            ])
+            setOrdersCount(orders.data.orders ? orders.data.orders.length : 0)
+            setUsersCount(users.data.users ? users.data.users.length : 0)
+            setTotalSales(sales.data.totalSales && sales.data.totalSales[0] ? sales.data.totalSales[0].totalSales : 0)
+        } catch (err) {
+            // Stats are supplementary — don't block the dashboard
+            console.log('Dashboard stats unavailable:', err?.message)
+        }
+    }
+
     useEffect(() => {
         getAdminProducts()
+        loadDashboardStats()
     }, [])
+
+    const stats = [
+        {
+            title: 'Products',
+            value: products ? products.length : 0,
+            to: '/admin/products',
+            accent: '#4285f4'
+        },
+        {
+            title: 'Orders',
+            value: ordersCount,
+            to: '/admin/orders',
+            accent: '#ff3b3b'
+        },
+        {
+            title: 'Users',
+            value: usersCount,
+            to: '/admin/users',
+            accent: '#a855f7'
+        },
+        {
+            title: 'Total Sales',
+            value: `₱${Number(totalSales).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            to: '/admin/orders',
+            accent: '#22c55e'
+        },
+        {
+            title: 'Out of Stock',
+            value: outOfStock,
+            to: '/admin/products',
+            accent: '#f59e0b'
+        }
+    ]
+
     return (
         <>
             <div className="row">
@@ -47,62 +111,52 @@ const Dashboard = () => {
                     <Sidebar />
                 </div>
                 <div className="col-12 col-md-10">
-                    <h1 className="my-4">Dashboard</h1>
+                    <Typography variant="h4" fontWeight={800} sx={{ my: 3, px: 2 }}>
+                        Dashboard
+                    </Typography>
                     {loading ? <Loader /> : (
                         <>
                             <MetaData title={'Admin Dashboard'} />
-                            <div className="row pr-4">
-                                <div className="col-xl-3 col-sm-6 mb-3">
-                                    <div className="card text-white bg-success o-hidden h-100">
-                                        <div className="card-body">
-                                            <div className="text-center card-font-size">Products<br /> <b>{products && products.length}</b></div>
-                                        </div>
-                                        <Link className="card-footer text-white clearfix small z-1" to="/admin/products">
-                                            <span className="float-left">View Details</span>
-                                            <span className="float-right"><i className="fa fa-angle-right"></i></span>
-                                        </Link>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-sm-6 mb-3">
-                                    <div className="card text-white bg-danger o-hidden h-100">
-                                        <Link className="card-footer text-white clearfix small z-1" to="/admin/orders">
-                                            <span className="float-left">View Details</span>
-                                            <span className="float-right"><i className="fa fa-angle-right"></i></span>
-                                        </Link>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-sm-6 mb-3">
-                                    <div className="card text-white bg-info o-hidden h-100">
-                                        <Link className="card-footer text-white clearfix small z-1" to="/admin/users">
-                                            <span className="float-left">View Details</span>
-                                            <span className="float-right"><i className="fa fa-angle-right"></i></span>
-                                        </Link>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-sm-6 mb-3">
-                                    <div className="card text-white bg-warning o-hidden h-100">
-                                        <div className="card-body">
-                                            <div className="text-center card-font-size">Out of Stock<br /> <b>{outOfStock}</b></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <Box sx={{ px: 2 }}>
+                                <Grid container spacing={2.5}>
+                                    {stats.map(stat => (
+                                        <Grid item xs={12} sm={6} lg={4} xl={2.4} key={stat.title}>
+                                            <Card sx={{
+                                                height: '100%',
+                                                border: '1px solid #262626',
+                                                transition: 'border-color 0.2s ease, transform 0.2s ease',
+                                                '&:hover': { borderColor: stat.accent, transform: 'translateY(-2px)' }
+                                            }}>
+                                                <CardActionArea component={Link} to={stat.to} sx={{ p: 3 }}>
+                                                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing="0.06em">
+                                                        {stat.title}
+                                                    </Typography>
+                                                    <Typography variant="h4" fontWeight={800} sx={{ color: stat.accent, mt: 0.5 }}>
+                                                        {stat.value}
+                                                    </Typography>
+                                                </CardActionArea>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
                         </>
                     )}
                 </div>
-                <>
-                    <SalesChart />
-                </>
-                <>
-                    <ProductSalesChart />
-                </>
-                <>
-                    <UserSalesChart />
-                </>
-                <>
-                    <MonthlySalesChart />
-                </>
             </div>
+
+            <Box sx={{ mt: 4 }}>
+                <SalesChart />
+            </Box>
+            <Box sx={{ mt: 4 }}>
+                <ProductSalesChart />
+            </Box>
+            <Box sx={{ mt: 4 }}>
+                <UserSalesChart />
+            </Box>
+            <Box sx={{ mt: 4 }}>
+                <MonthlySalesChart />
+            </Box>
         </>
     )
 }

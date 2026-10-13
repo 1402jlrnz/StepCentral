@@ -43,6 +43,21 @@ class APIFeatures {
             finalFilter.ratings = Number(finalFilter.ratings)
         }
 
+        // Review filter: has (>=1), none (0), or minimum count (min1, min5, min10)
+        if (queryCopy.reviewFilter) {
+            const rf = String(queryCopy.reviewFilter).trim();
+            if (rf === 'has') {
+                finalFilter.numOfReviews = { $gt: 0 };
+            } else if (rf === 'none') {
+                finalFilter.numOfReviews = 0;
+            } else if (rf.startsWith('min')) {
+                const min = Number(rf.slice(3));
+                if (!isNaN(min)) finalFilter.numOfReviews = { $gte: min };
+            }
+            delete queryCopy.reviewFilter;
+            delete finalFilter.reviewFilter;
+        }
+
         this.query = this.query.find(finalFilter);
         return this;
     }

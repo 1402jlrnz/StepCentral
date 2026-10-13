@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { TextField, Button, Card, Avatar, Box, Typography } from '@mui/material'
 import MetaData from '../Layout/MetaData'
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
@@ -7,6 +8,7 @@ import { updateProfile, loadUser, clearErrors } from '../../actions/userActions'
 
 import { UPDATE_PROFILE_RESET } from '../../constants/userConstants'
 import { useDispatch, useSelector } from 'react-redux'
+import '../Auth/Auth.css'
 
 
 const UpdateProfile = () => {
@@ -69,65 +71,74 @@ const UpdateProfile = () => {
         <>
             <MetaData title={'Update Profile'} />
 
-            <div className="row wrapper">
-                <div className="col-10 col-lg-5">
-                    <form className="shadow-lg" onSubmit={submitHandler}>
-                        <h1 className="mt-2 mb-5">Update Profile</h1>
+            <div className="auth-page">
+                <div className="auth-container">
+                    <div className="auth-card">
+                        <div className="auth-header">
+                            <Typography variant="h4" fontWeight={800}>Update Profile</Typography>
+                            <Typography color="text.secondary">Keep your account details fresh</Typography>
+                        </div>
 
-                        <div className="form-group">
-                            <label htmlFor="name_field">Name</label>
-                            <input
-                                type="text"
+                        <form className="auth-form" onSubmit={submitHandler}>
+                            <TextField
+                                fullWidth
                                 id="name_field"
-                                className="form-control"
-                                name='name'
+                                name="name"
+                                label="Name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                sx={{ mb: 2 }}
                             />
-                        </div>
 
-                        <div className="form-group">
-                            <label htmlFor="email_field">Email</label>
-                            <input
-                                type="email"
+                            <TextField
+                                fullWidth
                                 id="email_field"
-                                className="form-control"
-                                name='email'
+                                name="email"
+                                label="Email"
+                                type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                sx={{ mb: 3 }}
                             />
-                        </div>
 
-                        <div className='form-group'>
-                            <label htmlFor='avatar_upload'>Avatar</label>
-                            <div className='d-flex align-items-center'>
-                                <div>
-                                    <figure className='avatar mr-3 item-rtl'>
-                                        <img
-                                            src={avatarPreview}
-                                            className='rounded-circle'
-                                            alt='Avatar Preview'
-                                        />
-                                    </figure>
-                                </div>
-                                <div className='custom-file'>
-                                    <input
-                                        type='file'
-                                        name='avatar'
-                                        className='custom-file-input'
-                                        id='customFile'
-                                        accept='image/*'
-                                        onChange={onChange}
-                                    />
-                                    <label className='custom-file-label' htmlFor='customFile'>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                                <Avatar
+                                    src={avatarPreview}
+                                    alt="Avatar Preview"
+                                    sx={{ width: 56, height: 56, border: '1px solid #2a2a2a' }}
+                                />
+                                <Box>
+                                    <Button
+                                        variant="outlined"
+                                        component="label"
+                                        size="small"
+                                    >
                                         Choose Avatar
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+                                        <input
+                                            hidden
+                                            type="file"
+                                            name="avatar"
+                                            accept="image/*"
+                                            onChange={onChange}
+                                        />
+                                    </Button>
+                                    <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
+                                        PNG or JPG
+                                    </Typography>
+                                </Box>
+                            </Box>
 
-                        <button type="submit" className="btn update-btn btn-block mt-4 mb-3" disabled={loading ? true : false} >Update</button>
-                    </form>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                fullWidth
+                                size="large"
+                                disabled={loading}
+                            >
+                                {loading ? 'Updating...' : 'Update'}
+                            </Button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </>

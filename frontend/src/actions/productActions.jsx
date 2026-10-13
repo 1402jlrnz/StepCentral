@@ -17,7 +17,7 @@ import {
     CLEAR_ERRORS
 } from '../constants/productConstants';
 
-export const getProducts = (currentPage = 1, keyword = '', price, category = '', ratings = 0) => async (dispatch) => {
+export const getProducts = (currentPage = 1, keyword = '', price, category = '', ratings = 0, reviewFilter = '') => async (dispatch) => {
     try {
         dispatch({
             type: ALL_PRODUCTS_REQUEST
@@ -31,6 +31,10 @@ export const getProducts = (currentPage = 1, keyword = '', price, category = '',
 
         if (ratings > 0) {
             link += `&ratings=${ratings}`
+        }
+
+        if (reviewFilter) {
+            link += `&reviewFilter=${reviewFilter}`
         }
 
         const { data } = await axios.get(link)

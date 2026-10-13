@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import {
+    Box,
+    Typography,
+    Rating,
+    Button,
+    Card,
+    CardContent,
+    TextField,
+    Grid,
+    Chip,
+    Divider,
+    Tabs,
+    Tab,
+    IconButton
+} from '@mui/material'
+import { ArrowBack } from '@mui/icons-material'
 
 import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
 import { getProductDetails, createReview, getProductReviews, clearErrors } from '../../actions/productActions'
 import { addItemToCart } from '../../actions/cartActions'
 import { formatPrice } from '../Utils/helpers'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductDetails = () => {
     const dispatch = useDispatch()
@@ -24,6 +40,7 @@ const ProductDetails = () => {
     const [comment, setComment] = useState('')
     const [hoverRating, setHoverRating] = useState(0)
     const [quantity, setQuantity] = useState(1)
+    const [activeTab, setActiveTab] = useState(0)
 
     useEffect(() => {
         dispatch(getProductDetails(id))
@@ -66,171 +83,202 @@ const ProductDetails = () => {
         }
     }, [dispatch, reviewSuccess])
 
-    const stars = [1, 2, 3, 4, 5]
-
     return (
         <>
             {(productDetailsLoading || reviewsLoading) ? <Loader /> : (
                 <>
                     <MetaData title={productDetails.name} />
 
-                    {/* Back button */}
-                    <div className="container mt-3">
-                        <button
+                    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
+                        {/* Back button */}
+                        <IconButton
                             id="back_btn"
-                            type="button"
-                            className="btn btn-outline-light btn-sm"
                             onClick={() => navigate(-1)}
+                            sx={{ color: '#a1a1aa', mb: 2, border: '1px solid #262626', '&:hover': { color: '#ff3b3b', borderColor: '#ff3b3b' } }}
                         >
-                            <i className="fa fa-arrow-left mr-2" aria-hidden="true"></i>
-                            Back
-                        </button>
-                    </div>
+                            <ArrowBack />
+                            <Typography sx={{ ml: 1, fontWeight: 600, fontSize: '0.9rem' }}>Back</Typography>
+                        </IconButton>
 
-                    <div className="row f-flex justify-content-around">
-                        <div className="col-12 col-lg-5 img-fluid" id="product_image">
-                            <img src={productDetails.images && productDetails.images[0] ? productDetails.images[0].url : ''}
-                                alt={productDetails.name} height="450" width="450" />
-                        </div>
+                        <Card sx={{ p: { xs: 2, md: 4 } }}>
+                            <Grid container spacing={4}>
+                                {/* Product image */}
+                                <Grid item xs={12} md={6}>
+                                    <Box
+                                        component="img"
+                                        id="product_image"
+                                        src={productDetails.images && productDetails.images[0] ? productDetails.images[0].url : ''}
+                                        alt={productDetails.name}
+                                        sx={{
+                                            width: '100%',
+                                            maxHeight: 450,
+                                            objectFit: 'contain',
+                                            borderRadius: 3,
+                                            backgroundColor: '#0f0f0f',
+                                            border: '1px solid #262626'
+                                        }}
+                                    />
+                                </Grid>
 
-                        <div className="col-12 col-lg-5 mt-5">
-                            <h3>{productDetails.name}</h3>
-                            <p id="product_id">Product #{productDetails._id}</p>
+                                {/* Product info */}
+                                <Grid item xs={12} md={6}>
+                                    <Typography variant="h4" fontWeight={800} gutterBottom>
+                                        {productDetails.name}
+                                    </Typography>
+                                    <Typography id="product_id" variant="body2" color="text.secondary" gutterBottom>
+                                        Product #{productDetails._id}
+                                    </Typography>
 
-                            <hr />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                                        <Rating value={productDetails.ratings} precision={0.5} readOnly />
+                                        <Typography id="no_of_reviews" variant="body2" color="text.secondary">
+                                            ({productDetails.numOfReviews} reviews)
+                                        </Typography>
+                                    </Box>
 
-                            <div className="rating-outer">
-                                <div className="rating-inner" style={{ width: `${(productDetails.ratings / 5) * 100}%` }}></div>
-                            </div>
-                            <span id="no_of_reviews">({productDetails.numOfReviews} Reviews)</span>
+                                    <Divider sx={{ mb: 2 }} />
 
-                            <hr />
+                                    <Typography id="product_price" variant="h4" sx={{ color: '#ff3b3b', fontWeight: 800, my: 2 }}>
+                                        ₱{formatPrice(productDetails.price)}
+                                    </Typography>
 
-                            <p id="product_price">₱{formatPrice(productDetails.price)}</p>
+                                    <Divider sx={{ mb: 2 }} />
 
-                            <hr />
+                                    {/* Quantity selector */}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                                        <Box className="stockCounter qty-pill">
+                                            <button className="qty-btn" onClick={() => setQuantity(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
+                                            <input type="number" className="qty-input" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                                            <button className="qty-btn" onClick={() => setQuantity(q => Math.min(productDetails.stock, q + 1))} aria-label="Increase quantity">+</button>
+                                        </Box>
 
-                            <p>{productDetails.description}</p>
-
-                            <hr />
-
-                            <div className="stockCounter d-inline">
-                                <span className="btn btn-outline-danger minus" onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</span>
-
-                                <input type="number" className="form-control count d-inline" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
-
-                                <span className="btn btn-outline-success plus" onClick={() => setQuantity(q => Math.min(productDetails.stock, q + 1))}>+</span>
-                            </div>
-
-                            <button type="button" id="cart_btn" className="btn btn-primary d-inline ml-4"
-                                disabled={productDetails.stock === 0 ? true : false}
-                                onClick={addToCart}>
-                                Add to Cart
-                            </button>
-
-                            <hr />
-
-                            <p>Status: <span id="stock_status" className={productDetails.stock > 0 ? 'greenColor' : 'redColor'}>
-                                {productDetails.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></p>
-
-                            <hr />
-
-                            <h4 className="mt-2">Seller:</h4>
-                            <p id="product_seller">{productDetails.seller}</p>
-
-                            <hr />
-
-                        </div>
-
-                    </div>
-
-                    {/* Reviews Section */}
-                    <div className="container mt-5">
-                        <h3 className="mb-4">Customer Reviews</h3>
-
-                        {/* Write a Review */}
-                        {user && (
-                            <div className="card mb-4">
-                                <div className="card-header bg-light">
-                                    <h4>Write a Review</h4>
-                                </div>
-                                <div className="card-body">
-                                    <form onSubmit={submitReview}>
-                                        <div className="form-group mb-3">
-                                            <label>Your Rating</label>
-                                            <div className="star-rating">
-                                                {stars.map(star => (
-                                                    <span
-                                                        key={star}
-                                                        className={`star ${star <= (hoverRating || rating) ? 'filled' : ''}`}
-                                                        onClick={() => setRating(star)}
-                                                        onMouseEnter={() => setHoverRating(star)}
-                                                        onMouseLeave={() => setHoverRating(0)}
-                                                    >
-                                                        ★
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group mb-3">
-                                            <label>Your Review</label>
-                                            <textarea
-                                                className="form-control"
-                                                rows="4"
-                                                value={comment}
-                                                onChange={(e) => setComment(e.target.value)}
-                                                placeholder="Share your experience with this product..."
-                                            />
-                                        </div>
-
-                                        <button
-                                            type="submit"
-                                            className="btn btn-primary"
-                                            disabled={reviewLoading}
+                                        <Button
+                                            id="cart_btn"
+                                            variant="contained"
+                                            size="large"
+                                            onClick={addToCart}
+                                            disabled={productDetails.stock === 0}
                                         >
-                                            {reviewLoading ? 'Submitting...' : 'Submit Review'}
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        )}
+                                            {productDetails.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                        </Button>
+                                    </Box>
 
-                        {!user && (
-                            <div className="alert alert-info mb-4">
-                                <a href="/login">Login</a> to write a review
-                            </div>
-                        )}
+                                    <Typography variant="body2">
+                                        Status:{' '}
+                                        <Chip
+                                            id="stock_status"
+                                            size="small"
+                                            label={productDetails.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                                            sx={{
+                                                fontWeight: 700,
+                                                color: productDetails.stock > 0 ? '#22c55e' : '#ef4444',
+                                                border: `1px solid ${productDetails.stock > 0 ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        />
+                                    </Typography>
 
-                        {/* Reviews List */}
-                        <div className="reviews-list">
-                            {reviews.length === 0 ? (
-                                <p className="text-muted">No reviews yet. Be the first to review!</p>
-                            ) : (
-                                reviews.map((review) => (
-                                    <div key={review._id} className="card mb-3 review-card">
-                                        <div className="card-body">
-                                            <div className="d-flex justify-content-between mb-2">
-                                                <div>
-                                                    <strong>{review.name}</strong>
-                                                    <div className="review-rating">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <span key={i} className={i < review.rating ? 'text-warning' : 'text-muted'}>★</span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <small className="text-muted">
-                                                    {new Date(review.createdAt).toLocaleDateString()}
-                                                </small>
-                                            </div>
-                                            <p className="mb-0">{review.comment}</p>
-                                        </div>
-                                    </div>
-                                ))
+                                    <Typography variant="body2" sx={{ mt: 2 }}>
+                                        Seller: <span id="product_seller" style={{ fontWeight: 700 }}>{productDetails.seller}</span>
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Card>
+
+                        {/* Tabs: Description & Reviews */}
+                        <Box sx={{ mt: 4 }}>
+                            <Tabs
+                                value={activeTab}
+                                onChange={(e, v) => setActiveTab(v)}
+                                sx={{ borderBottom: '1px solid #262626' }}
+                            >
+                                <Tab label="Description" sx={{ color: '#a1a1aa', fontWeight: 700 }} />
+                                <Tab label={`Reviews (${productDetails.numOfReviews})`} sx={{ color: '#a1a1aa', fontWeight: 700 }} />
+                            </Tabs>
+
+                            {/* Description tab */}
+                            {activeTab === 0 && (
+                                <Card sx={{ p: 3, mt: 2 }}>
+                                    <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
+                                        {productDetails.description}
+                                    </Typography>
+                                </Card>
                             )}
-                        </div>
-                    </div>
 
+                            {/* Reviews tab */}
+                            {activeTab === 1 && (
+                                <Box sx={{ mt: 2 }}>
+                                    {/* Write a Review */}
+                                    {user ? (
+                                        <Card sx={{ p: 3, mb: 3 }}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Write a Review</Typography>
+                                            <form onSubmit={submitReview}>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                                        Your Rating
+                                                    </Typography>
+                                                    <Rating
+                                                        name="review_rating"
+                                                        value={hoverRating || rating}
+                                                        onChange={(e, v) => setRating(v)}
+                                                        onChangeActive={(e, v) => setHoverRating(v)}
+                                                        size="large"
+                                                    />
+                                                </Box>
+
+                                                <TextField
+                                                    fullWidth
+                                                    multiline
+                                                    rows={4}
+                                                    label="Your Review"
+                                                    placeholder="Share your experience with this product..."
+                                                    value={comment}
+                                                    onChange={(e) => setComment(e.target.value)}
+                                                    sx={{ mb: 2 }}
+                                                />
+
+                                                <Button variant="contained" type="submit" disabled={reviewLoading}>
+                                                    {reviewLoading ? 'Submitting...' : 'Submit Review'}
+                                                </Button>
+                                            </form>
+                                        </Card>
+                                    ) : (
+                                        <Card sx={{ p: 2, mb: 3, textAlign: 'center' }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                <Link to="/login" sx={{ color: '#ff3b3b', fontWeight: 700 }}>Login</Link> to write a review
+                                            </Typography>
+                                        </Card>
+                                    )}
+
+                                    {/* Reviews list */}
+                                    {reviews.length === 0 ? (
+                                        <Card sx={{ p: 3, textAlign: 'center' }}>
+                                            <Typography color="text.secondary">No reviews yet. Be the first to review!</Typography>
+                                        </Card>
+                                    ) : (
+                                        reviews.map((review) => (
+                                            <Card
+                                                key={review._id}
+                                                sx={{ p: 3, mb: 2 }}
+                                                className="review-card-mui"
+                                            >
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                                    <Box>
+                                                        <Typography fontWeight={700}>{review.name}</Typography>
+                                                        <Rating value={review.rating} readOnly size="small" />
+                                                    </Box>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {new Date(review.createdAt).toLocaleDateString()}
+                                                    </Typography>
+                                                </Box>
+                                                <Typography variant="body2">{review.comment}</Typography>
+                                            </Card>
+                                        ))
+                                    )}
+                                </Box>
+                            )}
+                        </Box>
+                    </Box>
                 </>
             )}
         </>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import MetaData from '../Layout/MetaData'
 import Sidebar from './SideBar'
 import { getToken } from '../Utils/helpers'
+import { TextField, MenuItem, Button } from '@mui/material'
 import axios from 'axios'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -115,10 +116,11 @@ const NewProduct = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="name_field">Name</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="name_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                     />
@@ -126,10 +128,11 @@ const NewProduct = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="price_field">Price</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="price_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={price}
                                         onChange={(e) => setPrice(e.target.value)}
                                     />
@@ -137,24 +140,40 @@ const NewProduct = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="description_field">Description</label>
-                                    <textarea className="form-control" id="description_field" rows="8" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
+                                    <TextField
+                                        multiline
+                                        rows={8}
+                                        id="description_field"
+                                        size="small"
+                                        fullWidth
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                    />
                                 </div>
 
                                 <div className="form-group">
                                     <label htmlFor="category_field">Category</label>
-                                    <select className="form-control" id="category_field" value={category} onChange={(e) => setCategory(e.target.value)}>
+                                    <TextField
+                                        select
+                                        id="category_field"
+                                        size="small"
+                                        fullWidth
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                    >
                                         {categories.map(category => (
-                                            <option key={category} value={category} >{category}</option>
+                                            <MenuItem key={category} value={category} >{category}</MenuItem>
                                         ))}
-
-                                    </select>
+                                    </TextField>
                                 </div>
+
                                 <div className="form-group">
                                     <label htmlFor="stock_field">Stock</label>
-                                    <input
+                                    <TextField
                                         type="number"
                                         id="stock_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={stock}
                                         onChange={(e) => setStock(e.target.value)}
                                     />
@@ -162,10 +181,11 @@ const NewProduct = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="seller_field">Seller Name</label>
-                                    <input
+                                    <TextField
                                         type="text"
                                         id="seller_field"
-                                        className="form-control"
+                                        size="small"
+                                        fullWidth
                                         value={seller}
                                         onChange={(e) => setSeller(e.target.value)}
                                     />
@@ -195,13 +215,15 @@ const NewProduct = () => {
                                 </div>
 
 
-                                <button
+                                <Button
                                     id="login_button"
                                     type="submit"
-                                    className="btn btn-block py-3"
+                                    variant="contained"
+                                    fullWidth
+                                    size="large"
                                 >
                                     CREATE
-                                </button>
+                                </Button>
 
                             </form>
                         </div>

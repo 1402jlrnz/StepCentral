@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    Button,
+    FormControl,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    TextField,
+    InputAdornment,
+    Divider
+} from '@mui/material'
 import MetaData from '../Layout/MetaData'
 import CheckoutSteps from './CheckoutSteps'
 import { useDispatch, useSelector } from 'react-redux'
@@ -64,121 +78,151 @@ const Payment = () => {
                 <div className="checkout-container">
                     <CheckoutSteps shipping confirmOrder payment />
 
-                    <div className="row justify-content-center">
-                        <div className="col-12 col-lg-6">
-                            <div className="checkout-card">
-                                <h1 className="checkout-title" style={{ fontSize: '1.5rem' }}>Payment Method</h1>
-                                <p className="checkout-subtitle" style={{ marginBottom: '1.5rem' }}>
-                                    Choose how you'd like to pay.
-                                </p>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Box sx={{ width: '100%', maxWidth: 560 }}>
+                            <Card>
+                                <CardContent sx={{ p: 4 }}>
+                                    <Typography variant="h4" className="checkout-title" style={{ fontSize: '1.6rem' }}>
+                                        Payment Method
+                                    </Typography>
+                                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                                        Choose how you'd like to pay.
+                                    </Typography>
 
-                                <form onSubmit={submitHandler}>
-                                    <div className="payment-options">
-                                        {/* Cash on Delivery */}
-                                        <label className={`payment-option ${paymentMethod === 'COD' ? 'selected' : ''}`}>
-                                            <input
-                                                type="radio"
+                                    <form onSubmit={submitHandler}>
+                                        <FormControl component="fieldset" sx={{ width: '100%', mb: 3 }}>
+                                            <RadioGroup
                                                 name="payment_method"
-                                                value="COD"
-                                                checked={paymentMethod === 'COD'}
-                                                onChange={() => setPaymentMethod('COD')}
-                                            />
-                                            <div className="payment-option-header">
-                                                <span className="payment-option-icon">
-                                                    <i className="fa fa-money" aria-hidden="true"></i>
-                                                </span>
-                                                <span className="payment-option-text">
-                                                    <span className="payment-option-title">Cash on Delivery</span>
-                                                    <span className="payment-option-desc">Pay with cash when your order arrives</span>
-                                                </span>
-                                                <span className="payment-option-radio"></span>
-                                            </div>
+                                                value={paymentMethod}
+                                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                            >
+                                                {/* Cash on Delivery */}
+                                                <Box
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor: paymentMethod === 'COD' ? '#ff3b3b' : '#2a2a2a',
+                                                        borderRadius: 3,
+                                                        p: 2,
+                                                        mb: 2,
+                                                        bgcolor: paymentMethod === 'COD' ? 'rgba(255, 59, 59, 0.05)' : 'transparent',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <FormControlLabel
+                                                        value="COD"
+                                                        control={<Radio sx={{ color: '#6b6b72', '&.Mui-checked': { color: '#ff3b3b' } }} />}
+                                                        label={
+                                                            <Box>
+                                                                <Typography fontWeight={700}>Cash on Delivery</Typography>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    Pay with cash when your order arrives
+                                                                </Typography>
+                                                            </Box>
+                                                        }
+                                                    />
+                                                    {paymentMethod === 'COD' && (
+                                                        <>
+                                                            <Divider sx={{ my: 1 }} />
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                Our courier will collect the exact amount in cash upon delivery. No advance payment needed.
+                                                            </Typography>
+                                                        </>
+                                                    )}
+                                                </Box>
 
-                                            {paymentMethod === 'COD' && (
-                                                <div className="payment-panel">
-                                                    <div className="payment-note">
-                                                        <i className="fa fa-info-circle" aria-hidden="true"></i>
-                                                        <span>Our courier will collect the exact amount in cash upon delivery. No advance payment needed.</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </label>
+                                                {/* GCash */}
+                                                <Box
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor: paymentMethod === 'GCash' ? '#ff3b3b' : '#2a2a2a',
+                                                        borderRadius: 3,
+                                                        p: 2,
+                                                        bgcolor: paymentMethod === 'GCash' ? 'rgba(255, 59, 59, 0.05)' : 'transparent',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <FormControlLabel
+                                                        value="GCash"
+                                                        control={<Radio sx={{ color: '#6b6b72', '&.Mui-checked': { color: '#ff3b3b' } }} />}
+                                                        label={
+                                                            <Box>
+                                                                <Typography fontWeight={700}>GCash</Typography>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    Pay instantly with your GCash wallet
+                                                                </Typography>
+                                                            </Box>
+                                                        }
+                                                    />
 
-                                        {/* GCash */}
-                                        <label className={`payment-option ${paymentMethod === 'GCash' ? 'selected' : ''}`}>
-                                            <input
-                                                type="radio"
-                                                name="payment_method"
-                                                value="GCash"
-                                                checked={paymentMethod === 'GCash'}
-                                                onChange={() => setPaymentMethod('GCash')}
-                                            />
-                                            <div className="payment-option-header">
-                                                <span className="payment-option-icon gcash">
-                                                    <i className="fa fa-mobile" aria-hidden="true"></i>
-                                                </span>
-                                                <span className="payment-option-text">
-                                                    <span className="payment-option-title">GCash</span>
-                                                    <span className="payment-option-desc">Pay instantly with your GCash wallet</span>
-                                                </span>
-                                                <span className="payment-option-radio"></span>
-                                            </div>
+                                                    {paymentMethod === 'GCash' && (
+                                                        <Box sx={{ mt: 2 }}>
+                                                            <Divider sx={{ mb: 2 }} />
+                                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                                Send the exact amount to <b>Step Central</b> (0917 555 1234). Enter your GCash details below for verification.
+                                                            </Typography>
 
-                                            {paymentMethod === 'GCash' && (
-                                                <div className="payment-panel">
-                                                    <div className="payment-note">
-                                                        <i className="fa fa-info-circle" aria-hidden="true"></i>
-                                                        <span>Send the exact amount to <b>Step Central</b> (0917 555 1234). Enter your GCash details below for verification.</span>
-                                                    </div>
+                                                            <TextField
+                                                                label="GCash Account Name"
+                                                                id="gcash_name_field"
+                                                                fullWidth
+                                                                value={gcashName}
+                                                                onChange={(e) => setGcashName(e.target.value)}
+                                                                placeholder="Juan Dela Cruz"
+                                                                required
+                                                                sx={{ mb: 2 }}
+                                                            />
 
-                                                    <div className="form-group mt-3">
-                                                        <label htmlFor="gcash_name_field">GCash Account Name</label>
-                                                        <input
-                                                            type="text"
-                                                            id="gcash_name_field"
-                                                            className="form-control"
-                                                            placeholder="Juan Dela Cruz"
-                                                            value={gcashName}
-                                                            onChange={(e) => setGcashName(e.target.value)}
-                                                            required
-                                                        />
-                                                    </div>
+                                                            <TextField
+                                                                label="GCash Number"
+                                                                id="gcash_number_field"
+                                                                fullWidth
+                                                                value={gcashNumber}
+                                                                onChange={(e) => setGcashNumber(e.target.value)}
+                                                                placeholder="09XX XXX XXXX"
+                                                                required
+                                                            />
 
-                                                    <div className="form-group">
-                                                        <label htmlFor="gcash_number_field">GCash Number</label>
-                                                        <input
-                                                            type="tel"
-                                                            id="gcash_number_field"
-                                                            className="form-control"
-                                                            placeholder="09XX XXX XXXX"
-                                                            value={gcashNumber}
-                                                            onChange={(e) => setGcashNumber(e.target.value)}
-                                                            required
-                                                        />
-                                                    </div>
+                                                            <Box
+                                                                sx={{
+                                                                    mt: 2,
+                                                                    p: 1.5,
+                                                                    borderRadius: 2,
+                                                                    border: '1px dashed #2a2a2a',
+                                                                    background: '#141414',
+                                                                    display: 'flex',
+                                                                    justifyContent: 'space-between',
+                                                                    alignItems: 'baseline'
+                                                                }}
+                                                            >
+                                                                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                                                    Amount to pay
+                                                                </Typography>
+                                                                <Typography variant="h6" sx={{ color: '#ff3b3b', fontWeight: 800 }}>
+                                                                    ₱{formatPrice(orderInfo && orderInfo.totalPrice)}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            </RadioGroup>
+                                        </FormControl>
 
-                                                    <div className="payment-amount">
-                                                        <span>Amount to pay</span>
-                                                        <span>₱{formatPrice(orderInfo && orderInfo.totalPrice)}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </label>
-                                    </div>
-
-                                    <button
-                                        id="pay_btn"
-                                        type="submit"
-                                        className="checkout-btn"
-                                    >
-                                        {paymentMethod === 'COD'
-                                            ? 'Place Order'
-                                            : `Pay ₱${formatPrice(orderInfo && orderInfo.totalPrice)} with GCash`}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                                        <Button
+                                            id="pay_btn"
+                                            type="submit"
+                                            variant="contained"
+                                            fullWidth
+                                            size="large"
+                                        >
+                                            {paymentMethod === 'COD'
+                                                ? 'Place Order'
+                                                : `Pay ₱${formatPrice(orderInfo && orderInfo.totalPrice)} with GCash`}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    </Box>
                 </div>
             </div>
         </>

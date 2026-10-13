@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import { Box, Typography, Card, CardContent, TextField, MenuItem, Button } from '@mui/material'
 import MetaData from '../Layout/MetaData'
 import CheckoutSteps from './CheckoutSteps'
 import { useDispatch, useSelector } from 'react-redux'
@@ -31,100 +32,99 @@ const Shipping = () => {
                 <div className="checkout-container">
                     <CheckoutSteps shipping />
 
-                    <div className="row justify-content-center">
-                        <div className="col-12 col-lg-6">
-                            <div className="checkout-card">
-                                <h1 className="checkout-title" style={{ fontSize: '1.5rem' }}>Shipping Info</h1>
-                                <p className="checkout-subtitle" style={{ marginBottom: '1.5rem' }}>
-                                    Where should we deliver your kicks?
-                                </p>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Box sx={{ width: '100%', maxWidth: 560 }}>
+                            <Card>
+                                <CardContent sx={{ p: 4 }}>
+                                    <Typography variant="h4" className="checkout-title" style={{ fontSize: '1.6rem' }}>
+                                        Shipping Info
+                                    </Typography>
+                                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                                        Where should we deliver your kicks?
+                                    </Typography>
 
-                                <form onSubmit={submitHandler}>
-                                    <div className="form-group">
-                                        <label htmlFor="address_field">Address</label>
-                                        <input
-                                            type="text"
+                                    <form onSubmit={submitHandler}>
+                                        <TextField
+                                            label="Address"
                                             id="address_field"
-                                            className="form-control"
-                                            placeholder="Street, barangay, unit"
+                                            fullWidth
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
+                                            placeholder="Street, barangay, unit"
                                             required
+                                            sx={{ mb: 2 }}
                                         />
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="city_field">City / Municipality</label>
-                                        <input
-                                            type="text"
+                                        <TextField
+                                            label="City / Municipality"
                                             id="city_field"
-                                            className="form-control"
-                                            placeholder="e.g. Quezon City"
+                                            fullWidth
                                             value={city}
                                             onChange={(e) => setCity(e.target.value)}
+                                            placeholder="e.g. Quezon City"
                                             required
+                                            sx={{ mb: 2 }}
                                         />
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="phone_field">Phone No</label>
-                                        <input
-                                            type="tel"
+                                        <TextField
+                                            label="Phone No"
                                             id="phone_field"
-                                            className="form-control"
-                                            placeholder="09XX XXX XXXX"
+                                            type="tel"
+                                            fullWidth
                                             value={phoneNo}
                                             onChange={(e) => setPhoneNo(e.target.value)}
+                                            placeholder="09XX XXX XXXX"
                                             required
+                                            sx={{ mb: 2 }}
                                         />
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="postal_code_field">Postal Code</label>
-                                        <input
-                                            type="text"
+                                        <TextField
+                                            label="Postal Code"
                                             id="postal_code_field"
-                                            className="form-control"
-                                            placeholder="e.g. 1100"
+                                            fullWidth
                                             value={postalCode}
                                             onChange={(e) => setPostalCode(e.target.value)}
+                                            placeholder="e.g. 1100"
                                             required
+                                            sx={{ mb: 2 }}
                                         />
-                                    </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="country_field">Country</label>
-                                        <select
+                                        <TextField
+                                            select
+                                            label="Country"
                                             id="country_field"
-                                            className="form-control"
+                                            fullWidth
                                             value={country}
                                             onChange={(e) => setCountry(e.target.value)}
                                             required
+                                            sx={{ mb: 3 }}
                                         >
-                                            <option value="">Select Country</option>
-                                            <option value="Philippines">Philippines</option>
-                                            <option value="United States">United States</option>
-                                            <option value="Canada">Canada</option>
-                                            <option value="United Kingdom">United Kingdom</option>
-                                            <option value="Australia">Australia</option>
-                                            <option value="Germany">Germany</option>
-                                            <option value="France">France</option>
-                                            <option value="Japan">Japan</option>
-                                            <option value="Singapore">Singapore</option>
-                                        </select>
-                                    </div>
+                                            <MenuItem value="">Select Country</MenuItem>
+                                            <MenuItem value="Philippines">Philippines</MenuItem>
+                                            <MenuItem value="United States">United States</MenuItem>
+                                            <MenuItem value="Canada">Canada</MenuItem>
+                                            <MenuItem value="United Kingdom">United Kingdom</MenuItem>
+                                            <MenuItem value="Australia">Australia</MenuItem>
+                                            <MenuItem value="Germany">Germany</MenuItem>
+                                            <MenuItem value="France">France</MenuItem>
+                                            <MenuItem value="Japan">Japan</MenuItem>
+                                            <MenuItem value="Singapore">Singapore</MenuItem>
+                                        </TextField>
 
-                                    <button
-                                        id="shipping_btn"
-                                        type="submit"
-                                        className="checkout-btn"
-                                    >
-                                        CONTINUE
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                                        <Button
+                                            id="shipping_btn"
+                                            type="submit"
+                                            variant="contained"
+                                            fullWidth
+                                            size="large"
+                                        >
+                                            CONTINUE
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    </Box>
                 </div>
             </div>
         </>

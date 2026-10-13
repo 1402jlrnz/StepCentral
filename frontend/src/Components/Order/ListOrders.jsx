@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Box, Typography } from '@mui/material'
 import MetaData from '../Layout/MetaData'
 import Loader from '../Layout/Loader'
 import { toast } from 'react-toastify';
@@ -90,25 +91,32 @@ const ListOrders = () => {
     return (
         <>
             <MetaData title={'My Orders'} />
-            <h1 className="my-5">My Orders</h1>
+            <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 1, md: 3 }, py: 4 }}>
+                <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>My Orders</Typography>
 
+                {loading ? <Loader /> : (
+                    <div style={{ width: '100%' }}>
+                        <DataGrid
+                            rows={rows}
+                            columns={columns}
 
-
-
-            {loading ? <Loader /> : (
-                <div style={{ width: '100%' }}>
-                    <DataGrid
-                        rows={rows}
-                        columns={columns}
-
-                        pageSize={5}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        disableSelectionOnClick
-                        getRowId={(row) => row.id}
-                        showToolbar
-                    />
-                </div>
-            )}
+                            pageSize={5}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            disableSelectionOnClick
+                            getRowId={(row) => row.id}
+                            showToolbar
+                            sx={{
+                                color: '#fafafa',
+                                border: '1px solid #262626',
+                                '& .MuiDataGrid-columnHeaders': { backgroundColor: '#141414', color: '#a1a1aa' },
+                                '& .MuiDataGrid-cell': { borderColor: '#262626' },
+                                '& .MuiDataGrid-row:hover': { backgroundColor: '#1c1c1c' },
+                                '& .MuiDataGrid-footerContainer': { borderColor: '#262626', color: '#a1a1aa' }
+                            }}
+                        />
+                    </div>
+                )}
+            </Box>
         </>
     )
 }

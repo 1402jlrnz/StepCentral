@@ -16,6 +16,7 @@ const Home = () => {
     const [price, setPrice] = useState([1, 15000]);
     const [category, setCategory] = useState('')
     const [ratings, setRatings] = useState(0)
+    const [reviewFilter, setReviewFilter] = useState('')
     let { keyword } = useParams();
     const dispatch = useDispatch();
     const { loading, products: reduxProducts, productsCount, resPerPage, filteredProductsCount } = useSelector(state => state.products);
@@ -47,14 +48,14 @@ const Home = () => {
     const loadMore = useCallback(() => {
         if (loading || allProducts.length >= count) return;
         const nextPage = Math.ceil(allProducts.length / resPerPage) + 1;
-        dispatch(getProducts(nextPage, keyword, price, category, ratings));
-    }, [dispatch, loading, allProducts.length, count, keyword, price, category, ratings, resPerPage]);
+        dispatch(getProducts(nextPage, keyword, price, category, ratings, reviewFilter));
+    }, [dispatch, loading, allProducts.length, count, keyword, price, category, ratings, reviewFilter, resPerPage]);
 
     // Initial load - reset accumulated products when filters change
     useEffect(() => {
         setAllProducts([]);
-        dispatch(getProducts(1, keyword, price, category, ratings));
-    }, [dispatch, keyword, price, category, ratings]);
+        dispatch(getProducts(1, keyword, price, category, ratings, reviewFilter));
+    }, [dispatch, keyword, price, category, ratings, reviewFilter]);
 
     // IntersectionObserver for infinite scroll
     useEffect(() => {
@@ -124,6 +125,35 @@ const Home = () => {
                                     </ul>
                                 </div>
                                 <div className="mt-4">
+                                    <h4 className="mb-3">Reviews</h4>
+                                    <ul className="pl-0">
+                                        {[
+                                            { value: 'has', label: 'Has Reviews' },
+                                            { value: 'none', label: 'No Reviews' },
+                                            { value: 'min1', label: '1+ Reviews' },
+                                            { value: 'min5', label: '5+ Reviews' },
+                                            { value: 'min10', label: '10+ Reviews' }
+                                        ].map(option => (
+                                            <li
+                                                key={option.value}
+                                                style={{ cursor: 'pointer', listStyle: 'none' }}
+                                                onClick={() => { setReviewFilter(option.value) }}
+                                                className={reviewFilter === option.value ? 'font-weight-bold' : ''}
+                                            >
+                                                {option.label}
+                                            </li>
+                                        ))}
+                                        {reviewFilter && (
+                                            <li
+                                                style={{ cursor: 'pointer', listStyle: 'none', fontSize: '0.85rem', color: '#ff3b3b' }}
+                                                onClick={() => { setReviewFilter('') }}
+                                            >
+                                                Clear review filter
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                                <div className="mt-4">
                                     <h4 className="mb-3">Ratings</h4>
                                     <ul className="pl-0">
                                         {[4, 3, 2, 1].map(rating => (
@@ -148,7 +178,7 @@ const Home = () => {
                                 </div>
                                 <button
                                     className="btn btn-block btn-secondary mt-3"
-                                    onClick={() => { setCategory(''); setPrice([1, 15000]); setRatings(0); }}
+                                    onClick={() => { setCategory(''); setPrice([1, 15000]); setRatings(0); setReviewFilter(''); }}
                                 >
                                     Clear Filters
                                 </button>

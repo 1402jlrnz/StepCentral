@@ -1,5 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Badge,
+    Menu,
+    MenuItem,
+    Avatar,
+    Divider,
+    ListItemIcon,
+    ListItemText
+} from '@mui/material'
+import {
+    Dashboard as DashboardIcon,
+    Inventory as ProductsIcon,
+    AddCircleOutlined as CreateIcon,
+    ShoppingBagOutlined as OrdersIcon,
+    Person as ProfileIcon,
+    Logout as LogoutIcon
+} from '@mui/icons-material'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,13 +32,18 @@ export const Header = () => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.auth)
     const { cartItems } = useSelector(state => state.cart)
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const dropdownOpen = Boolean(anchorEl);
     let navigate = useNavigate()
+    const avatarRef = useRef(null);
 
     const currentUser = (user && (user._id || user.name)) ? user : getUser();
 
+    const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
+    const handleMenuClose = () => setAnchorEl(null);
+
     const logoutHandler = () => {
-        setDropdownOpen(false);
+        handleMenuClose();
         dispatch(logout());
         clearSession(() => { })
         toast.success('Logged out', {
@@ -32,65 +58,104 @@ export const Header = () => {
                 <div className="col-12 col-md-3">
                     <div className="navbar-brand">
                         <Link to="/">
-                            <span style={{ fontSize: '1.6rem', fontWeight: 'bold', textDecoration: 'none' }}>
+                            <Typography
+                                component="span"
+                                sx={{
+                                    fontSize: '1.6rem',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    fontFamily: "'Amazon Ember', sans-serif"
+                                }}
+                            >
                                 <span style={{ color: '#ff3b3b' }}>Step</span>
                                 <span style={{ color: '#ffffff' }}>Central</span>
-                            </span>
+                            </Typography>
                         </Link>
 
                     </div>
 
                 </div>
                 <Search />
-                <div className="col-12 col-md-3 mt-4 mt-md-0 text-center">
+                <div className="col-12 col-md-3 mt-4 mt-md-0">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                        {currentUser ? (
+                            <>
+                                <Button
+                                    onClick={handleMenuOpen}
+                                    startIcon={
+                                        <Avatar
+                                            src={currentUser.avatar && (currentUser.avatar.url || currentUser.avatar.secure_url)}
+                                            alt={currentUser.name}
+                                            sx={{ width: 28, height: 28, border: '1px solid #2a2a2a' }}
+                                        />
+                                    }
+                                    sx={{ color: '#fafafa', textTransform: 'none' }}
+                                >
+                                    {currentUser.name}
+                                </Button>
 
-                    {currentUser ? (<div className="ml-4 dropdown d-inline">
-                        <Link
-                            to="#!"
-                            className="btn dropdown-toggle text-white mr-4"
-                            type="button"
-                            id="dropDownMenuButton"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded={dropdownOpen}
-                            onClick={(e) => { e.preventDefault(); setDropdownOpen(!dropdownOpen); }}
-                        >
-                            <figure className="avatar avatar-nav">
-                                <img
-                                    src={currentUser.avatar && (currentUser.avatar.url || currentUser.avatar.secure_url)}
-                                    alt={currentUser && currentUser.name}
-                                    className="rounded-circle"
-                                />
-                            </figure>
-                            <span>{currentUser && currentUser.name}</span>
-                        </Link>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    open={dropdownOpen}
+                                    onClose={handleMenuClose}
+                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                    PaperProps={{ sx: { mt: 1, minWidth: 180, borderRadius: 3 } }}
+                                >
+                                    {currentUser.role === 'admin' && (
+                                        <>
+                                            <MenuItem component={Link} to="/dashboard" onClick={handleMenuClose}>
+                                                <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
+                                                Dashboard
+                                            </MenuItem>
+                                            <MenuItem component={Link} to="/admin/products" onClick={handleMenuClose}>
+                                                <ListItemIcon><ProductsIcon fontSize="small" /></ListItemIcon>
+                                                All Products
+                                            </MenuItem>
+                                            <MenuItem component={Link} to="/admin/product" onClick={handleMenuClose}>
+                                                <ListItemIcon><CreateIcon fontSize="small" /></ListItemIcon>
+                                                Create Product
+                                            </MenuItem>
+                                            <Divider />
+                                        </>
+                                    )}
+                                    <MenuItem component={Link} to="/orders/me" onClick={handleMenuClose}>
+                                        <ListItemIcon><OrdersIcon fontSize="small" /></ListItemIcon>
+                                        Orders
+                                    </MenuItem>
+                                    <MenuItem component={Link} to="/me" onClick={handleMenuClose}>
+                                        <ListItemIcon><ProfileIcon fontSize="small" /></ListItemIcon>
+                                        Profile
+                                    </MenuItem>
+                                    <Divider />
+                                    <MenuItem onClick={logoutHandler} sx={{ color: '#ff3b3b' }}>
+                                        <ListItemIcon><LogoutIcon fontSize="small" sx={{ color: '#ff3b3b' }} /></ListItemIcon>
+                                        Logout
+                                    </MenuItem>
+                                </Menu>
+                            </>
+                        ) : (
+                            <Button component={Link} to="/login" id="login_btn" variant="contained" sx={{ ml: 2 }}>
+                                Login
+                            </Button>
+                        )}
 
-                        <div className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`} aria-labelledby="dropDownMenuButton">
-                            {currentUser && currentUser.role === 'admin' && (
-                                <>
-                                    <Link className="dropdown-item" to="/dashboard" onClick={() => setDropdownOpen(false)}>Dashboard</Link>
-                                    <Link className="dropdown-item" to="/admin/products" onClick={() => setDropdownOpen(false)}>All Products</Link>
-                                    <Link className="dropdown-item" to="/admin/product" onClick={() => setDropdownOpen(false)}>Create Product</Link>
-                                </>
-                            )}
-                            <Link className="dropdown-item" to="/orders/me" onClick={() => setDropdownOpen(false)}>Orders</Link>
-                            <Link className="dropdown-item" to="/me" onClick={() => setDropdownOpen(false)}>Profile</Link>
-
-                            <Link
-                                className="dropdown-item text-danger" to="/"
-                                onClick={logoutHandler}
+                        <IconButton component={Link} to="/cart" className="cart-link" sx={{ color: '#fafafa' }}>
+                            <Badge
+                                badgeContent={cartItems ? cartItems.length : 0}
+                                showZero={false}
+                                sx={{
+                                    '& .MuiBadge-badge': {
+                                        backgroundColor: '#ff3b3b',
+                                        color: '#fff',
+                                        fontWeight: 700
+                                    }
+                                }}
                             >
-                                Logout
-                            </Link>
-                        </div>
-                    </div>) : <Link to="/login" className="btn ml-4" id="login_btn">Login</Link>}
-
-                    <Link to="/cart" style={{ textDecoration: 'none' }} className="cart-link">
-                        <span id="cart" className="ml-3">
-                            <i className="fa fa-shopping-cart" aria-hidden="true"></i>
-                        </span>
-                        <span className="ml-1" id="cart_count">{cartItems ? cartItems.length : null}</span>
-                    </Link>
+                                <i id="cart" className="fa fa-shopping-cart" style={{ fontSize: '1.3rem' }} aria-hidden="true"></i>
+                            </Badge>
+                        </IconButton>
+                    </Box>
                 </div>
 
             </nav>
