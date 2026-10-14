@@ -64,7 +64,7 @@ const check = (name, ok, extra = '') => {
     results.push(check('Order has items', order.orderItems && order.orderItems.length === 1));
     results.push(check('Order has shippingInfo', order.shippingInfo && order.shippingInfo.address));
     results.push(check('Order has paymentInfo', order.paymentInfo && order.paymentInfo.id));
-    results.push(check('Order status default Processing', order.orderStatus === 'Processing'));
+    results.push(check('Order status default Pending', order.orderStatus === 'Pending'));
 
     // 6. Unauthenticated order creation fails
     r = await j('/order/new', { method: 'POST', body: orderPayload });

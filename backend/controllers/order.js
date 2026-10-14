@@ -1,67 +1,110 @@
 const Order = require('../models/order');
+const OrderDetail = require('../models/orderDetail');
 const Product = require('../models/product');
 const sendEmail = require('../utils/sendEmail');
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
+
+const ORDER_STATUSES = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+
+// ₱ formatter
+const peso = (n) => `₱${Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// Restore stock for each line item (used on cancel)
+async function restoreStock(items) {
+    for (const item of items) {
+        if (item.product && item.quantity > 0) {
+            await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+        }
+    }
+}
+
+// Build the itemized block used in order emails
+function itemsBlock(items) {
+    return items.map(i => `  • ${i.name} x ${i.quantity} — ${peso(i.price * i.quantity)}`).join('\n');
+}
 
 // Create a new order   =>  /api/v1/order/new
 exports.newOrder = async (req, res, next) => {
-    const {
-        orderItems,
-        shippingInfo,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice,
-        paymentInfo
-
-    } = req.body;
-
-    const order = await Order.create({
-        orderItems,
-        shippingInfo,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice,
-        paymentInfo,
-        paidAt: Date.now(),
-        user: req.user._id
-    })
-
-    // Update product stock
-    for (const item of orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-            product.stock = product.stock - item.quantity;
-            await product.save({ validateBeforeSave: false });
-        }
-    }
-
-    // Send order confirmation email
     try {
-        const user = await req.user.populate('name email');
-        const pdfBuffer = await generateOrderReceiptPDF(order, user);
-        await sendEmail({
-            email: user.email,
-            subject: `Step Central - Order Confirmation #${order._id}`,
-            message: `Hi ${user.name},\n\nThank you for your order! Your order #${order._id} has been confirmed and is being processed.\n\nOrder Total: ₱${order.totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\nA PDF receipt is attached.\n\nThank you for shopping with Step Central!`,
-            attachments: [{
-                filename: `receipt-${order._id}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf'
-            }]
-        });
-    } catch (emailError) {
-        console.error('Failed to send order confirmation email:', emailError);
-        // Don't fail the order if email fails
-    }
+        const {
+            orderItems,
+            shippingInfo,
+            itemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice,
+            paymentInfo
+        } = req.body;
 
-    res.status(200).json({
-        success: true,
-        order
-    })
+        if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+            return res.status(400).json({ message: 'No order items' });
+        }
+
+        // 1. Create the order header
+        const order = await Order.create({
+            shippingInfo,
+            itemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice,
+            paymentInfo,
+            paidAt: Date.now(),
+            user: req.user._id
+        });
+
+        try {
+            // 2. Create normalized line items (order_details style)
+            await OrderDetail.insertMany(orderItems.map(item => ({
+                orderId: order._id,
+                product: item.product,
+                name: item.name,
+                image: item.image,
+                quantity: item.quantity,
+                price: item.price
+            })));
+
+            // 3. Decrement stock
+            for (const item of orderItems) {
+                await Product.updateOne(
+                    { _id: item.product },
+                    { $inc: { stock: -Math.abs(Number(item.quantity)) } }
+                );
+            }
+        } catch (err) {
+            // Compensate: roll the header back so we never ship an empty order
+            await Order.findByIdAndDelete(order._id);
+            throw err;
+        }
+
+        // 4. Populate line items for the response / email / PDF
+        await order.populate('orderItems');
+
+        // 5. Send order confirmation email with PDF receipt
+        try {
+            const user = req.user;
+            const pdfBuffer = await generateOrderReceiptPDF(order, user);
+            await sendEmail({
+                email: user.email,
+                subject: `Step Central - Order Confirmation #${order._id}`,
+                message: `Hi ${user.name},\n\nThank you for your order! Your order #${order._id} has been confirmed and is being processed.\n\nItems:\n${itemsBlock(order.orderItems)}\n\nSubtotal: ${peso(order.itemsPrice)}\nShipping: ${peso(order.shippingPrice)}\nGrand Total: ${peso(order.totalPrice)}\n\nA PDF receipt is attached.\n\nThank you for shopping with Step Central!`,
+                attachments: [{
+                    filename: `receipt-${order._id}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf'
+                }]
+            });
+        } catch (emailError) {
+            console.error('Failed to send order confirmation email:', emailError);
+            // Don't fail the order if email fails
+        }
+
+        res.status(200).json({
+            success: true,
+            order
+        })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
 // Generate PDF receipt
@@ -119,7 +162,8 @@ async function generateOrderReceiptPDF(order, user) {
 
         // Items
         let y = tableTop + 25;
-        order.orderItems.forEach((item, index) => {
+        const items = order.orderItems || [];
+        items.forEach((item, index) => {
             if (y > 700) {
                 doc.addPage();
                 y = 50;
@@ -129,8 +173,8 @@ async function generateOrderReceiptPDF(order, user) {
             doc.fontSize(9).fillColor('#000');
             doc.text(item.name.substring(0, 35), col1, y + 5);
             doc.text(item.quantity.toString(), col2, y + 5);
-            doc.text(`₱${item.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, col3, y + 5);
-            doc.text(`₱${(item.price * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, col4, y + 5);
+            doc.text(peso(item.price), col3, y + 5);
+            doc.text(peso(item.price * item.quantity), col4, y + 5);
             y += 25;
         });
 
@@ -139,31 +183,30 @@ async function generateOrderReceiptPDF(order, user) {
         // Totals
         doc.fontSize(10).fillColor('#000');
         doc.text(`Subtotal:`, 350, y);
-        doc.text(`₱${order.itemsPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
+        doc.text(peso(order.itemsPrice), 450, y);
         y += 20;
         doc.text(`Shipping:`, 350, y);
-        doc.text(`₱${order.shippingPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
+        doc.text(peso(order.shippingPrice), 450, y);
         y += 20;
         doc.text(`Tax (5%):`, 350, y);
-        doc.text(`₱${order.taxPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
+        doc.text(peso(order.taxPrice), 450, y);
         y += 20;
         doc.fontSize(12).fillColor('#232f3e');
         doc.text(`Total:`, 350, y);
-        doc.text(`₱${order.totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 450, y);
+        doc.text(peso(order.totalPrice), 450, y);
 
         y += 30;
 
         // Payment info
         doc.fontSize(12).fillColor('#232f3e').text('Payment Information', { underline: true });
         doc.moveDown(0.3);
-        doc.fontSize(10).fillColor('#000').text(`Payment ID: ${order.paymentInfo.id || 'N/A'}`);
+        doc.fontSize(10).fillColor('#000').text(`Method: ${order.paymentInfo.method || 'N/A'}`);
+        doc.fontSize(10).fillColor('#000').text(`Reference: ${order.paymentInfo.reference || order.paymentInfo.id || 'N/A'}`);
         doc.fontSize(10).fillColor('#000').text(`Status: ${order.paymentInfo.status || 'N/A'}`);
         doc.fontSize(10).fillColor('#000').text(`Paid At: ${order.paidAt ? new Date(order.paidAt).toLocaleDateString() : 'N/A'}`);
 
-        y += 30;
-
         // Footer
-        doc.fontSize(9).fillColor('#999').text('Thank you for shopping with Step Central!', { align: 'center' });
+        doc.fontSize(9).fillColor('#999').text('Thank you for shopping with Step Central!', { align: 'center', y: y + 40 });
         doc.fontSize(9).fillColor('#999').text('Contact: support@stepcentral.com | www.stepcentral.com', { align: 'center' });
 
         doc.end();
@@ -171,109 +214,178 @@ async function generateOrderReceiptPDF(order, user) {
 }
 
 exports.myOrders = async (req, res, next) => {
-    const orders = await Order.find({ user: req.user.id })
-    res.status(200).json({
-        success: true,
-        orders
-    })
+    try {
+        const orders = await Order.find({ user: req.user.id }).populate('orderItems');
+        res.status(200).json({
+            success: true,
+            orders
+        })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
 exports.getSingleOrder = async (req, res, next) => {
-    const order = await Order.findById(req.params.id).populate('user', 'name email')
-    if (!order) {
-        return res.status(404).json({
-            message: 'No Order found with this ID',
+    try {
+        const order = await Order.findById(req.params.id)
+            .populate('user', 'name email')
+            .populate('orderItems');
+        if (!order) {
+            return res.status(404).json({
+                message: 'No Order found with this ID',
+            })
+        }
+        res.status(200).json({
+            success: true,
+            order
         })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.status(200).json({
-        success: true,
-        order
-    })
 }
 
 exports.allOrders = async (req, res, next) => {
-    const orders = await Order.find()
-    let totalAmount = 0;
+    try {
+        const orders = await Order.find().populate('orderItems');
+        let totalAmount = 0;
 
-    orders.forEach(order => {
-        totalAmount += order.totalPrice
-    })
+        orders.forEach(order => {
+            totalAmount += order.totalPrice
+        })
 
-    res.status(200).json({
-        success: true,
-        totalAmount,
-        orders
-    })
+        res.status(200).json({
+            success: true,
+            totalAmount,
+            orders
+        })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
 exports.deleteOrder = async (req, res, next) => {
-    const order = await Order.findByIdAndDelete(req.params.id)
+    try {
+        const order = await Order.findByIdAndDelete(req.params.id)
 
-    if (!order) {
-        return res.status(400).json({
-            message: 'No Order found with this ID',
+        if (!order) {
+            return res.status(400).json({
+                message: 'No Order found with this ID',
+            })
+        }
+
+        // Remove normalized line items too
+        await OrderDetail.deleteMany({ orderId: order._id });
+
+        res.status(200).json({
+            success: true
         })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.status(200).json({
-        success: true
-    })
 }
 
+// Admin status update   =>  PUT /api/v1/admin/order/:id
 exports.updateOrder = async (req, res, next) => {
-    const order = await Order.findById(req.params.id)
+    try {
+        const { status } = req.body;
 
-    if (!order) {
-        return res.status(404).json({
-            message: 'No Order found with this ID',
+        if (!ORDER_STATUSES.includes(status)) {
+            return res.status(400).json({ message: 'Invalid order status' });
+        }
+
+        const order = await Order.findById(req.params.id).populate('orderItems');
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'No Order found with this ID',
+            })
+        }
+
+        if (order.orderStatus === 'Delivered') {
+            return res.status(400).json({
+                message: 'You have already delivered this order',
+            })
+        }
+
+        const oldStatus = order.orderStatus;
+
+        // Cancelled -> put the stock back (it was decremented at order creation)
+        if (status === 'Cancelled' && oldStatus !== 'Cancelled') {
+            await restoreStock(order.orderItems);
+        }
+
+        order.orderStatus = status;
+
+        if (status === 'Delivered') {
+            order.deliveredAt = Date.now();
+            order.dateReceived = Date.now();
+        }
+
+        await order.save();
+
+        // Send status update email with items / subtotal / grand total
+        if (oldStatus !== status) {
+            try {
+                const user = await order.populate('user', 'name email');
+                const pdfBuffer = await generateOrderReceiptPDF(order, user.user);
+                await sendEmail({
+                    email: user.user.email,
+                    subject: `Step Central - Order Status Update #${order._id}`,
+                    message: `Hi ${user.user.name},\n\nYour order #${order._id} status has been updated from "${oldStatus}" to "${status}".\n\nItems:\n${itemsBlock(order.orderItems)}\n\nSubtotal: ${peso(order.itemsPrice)}\nShipping: ${peso(order.shippingPrice)}\nTax: ${peso(order.taxPrice)}\nGrand Total: ${peso(order.totalPrice)}\n\n${status === 'Delivered' ? 'Your order has been delivered! Thank you for shopping with us.' : ''}\nTrack your order: http://localhost:5173/order/${order._id}\n\nThank you for shopping with Step Central!`,
+                    attachments: [{
+                        filename: `receipt-${order._id}.pdf`,
+                        content: pdfBuffer,
+                        contentType: 'application/pdf'
+                    }]
+                });
+            } catch (emailError) {
+                console.error('Failed to send status update email:', emailError);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
         })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
+}
 
-    if (order.orderStatus === 'Delivered') {
-        return res.status(400).json({
-            message: 'You have already delivered this order',
-        })
-    }
+// Customer self-cancel (Pending orders only)   =>  PUT /api/v1/order/:id/cancel
+exports.cancelMyOrder = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id).populate('orderItems');
 
-    // Update stock when order is delivered
-    if (req.body.status === 'Delivered' && order.orderStatus !== 'Delivered') {
-        order.orderItems.forEach(async item => {
-            await updateStock(item.product, item.quantity)
-        })
-    }
+        if (!order) {
+            return res.status(404).json({ message: 'No Order found with this ID' });
+        }
 
-    const oldStatus = order.orderStatus;
-    order.orderStatus = req.body.status
+        if (String(order.user) !== String(req.user._id)) {
+            return res.status(403).json({ message: 'You can only cancel your own orders' });
+        }
 
-    if (req.body.status === 'Delivered') {
-        order.deliveredAt = Date.now()
-    }
+        if (order.orderStatus !== 'Pending') {
+            return res.status(400).json({ message: `Only Pending orders can be cancelled (this order is ${order.orderStatus})` });
+        }
 
-    await order.save()
+        // Put the stock back, then mark cancelled
+        await restoreStock(order.orderItems);
+        order.orderStatus = 'Cancelled';
+        await order.save();
 
-    // Send status update email
-    if (oldStatus !== req.body.status) {
         try {
-            const user = await order.populate('user');
             await sendEmail({
-                email: user.user.email,
-                subject: `Step Central - Order Status Update #${order._id}`,
-                message: `Hi ${user.user.name},\n\nYour order #${order._id} status has been updated from "${oldStatus}" to "${req.body.status}".\n\n${req.body.status === 'Delivered' ? 'Your order has been delivered! Thank you for shopping with us.' : ''}\n\nTrack your order: http://localhost:5173/order/${order._id}\n\nThank you for shopping with Step Central!`
+                email: req.user.email,
+                subject: `Step Central - Order Cancelled #${order._id}`,
+                message: `Hi ${req.user.name},\n\nYour order #${order._id} has been cancelled and its stock has been returned.\n\nItems:\n${itemsBlock(order.orderItems)}\n\nGrand Total (voided): ${peso(order.totalPrice)}\n\nSorry to see you go — you can reorder anytime.\n\nThank you for shopping with Step Central!`
             });
         } catch (emailError) {
-            console.error('Failed to send status update email:', emailError);
+            console.error('Failed to send cancellation email:', emailError);
         }
-    }
 
-    res.status(200).json({
-        success: true,
-    })
-}
-
-async function updateStock(id, quantity) {
-    const product = await Product.findById(id);
-    if (product) {
-        product.stock = product.stock - quantity;
-        await product.save({ validateBeforeSave: false });
+        res.status(200).json({ success: true, order });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -438,14 +550,23 @@ exports.salesByDateRange = async (req, res, next) => {
 }
 
 // Product sales distribution (percentage per product)
+// Line items live in their own `orderdetails` collection now, so $lookup first.
 exports.productSales = async (req, res, next) => {
     const productSales = await Order.aggregate([
-        { $unwind: "$orderItems" },
+        {
+            $lookup: {
+                from: 'orderdetails',
+                localField: '_id',
+                foreignField: 'orderId',
+                as: 'items'
+            }
+        },
+        { $unwind: "$items" },
         {
             $group: {
-                _id: "$orderItems.name",
-                totalQuantity: { $sum: "$orderItems.quantity" },
-                totalRevenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } }
+                _id: "$items.name",
+                totalQuantity: { $sum: "$items.quantity" },
+                totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
             }
         },
         {

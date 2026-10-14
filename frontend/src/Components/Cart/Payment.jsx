@@ -55,7 +55,8 @@ const Payment = () => {
             : {
                 id: `GCASH-${Date.now()}`,
                 status: 'succeeded',
-                method: 'GCash'
+                method: 'GCash',
+                reference: gcashNumber
             }
 
         const order = {

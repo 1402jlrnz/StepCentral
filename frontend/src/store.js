@@ -26,6 +26,7 @@ import {
     allOrdersReducer,
     updateOrderReducer,
     deleteOrderReducer,
+    cancelOrderReducer,
 } from './reducers/orderReducers'
 
 let initialState = {
@@ -66,6 +67,7 @@ const reducer = combineReducers({
     allOrders: allOrdersReducer,
     updateOrder: updateOrderReducer,
     deleteOrder: deleteOrderReducer,
+    cancelOrder: cancelOrderReducer,
 })
 
 const middlware = [thunk]

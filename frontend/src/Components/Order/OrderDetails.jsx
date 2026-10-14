@@ -6,12 +6,15 @@ import Loader from '../Layout/Loader'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
-import { getOrderDetails } from '../../actions/orderActions'
+import { getOrderDetails, cancelOrder, clearErrors } from '../../actions/orderActions'
+import { CANCEL_ORDER_RESET } from '../../constants/orderConstants'
 import { formatPrice } from '../Utils/helpers'
+import Swal from 'sweetalert2'
 
 const OrderDetails = () => {
     const dispatch = useDispatch();
     const { loading, error, order = {} } = useSelector(state => state.orderDetails);
+    const { isCancelled, error: cancelError } = useSelector(state => state.cancelOrder);
     const { shippingInfo, orderItems, paymentInfo, user, totalPrice, orderStatus } = order
     let { id } = useParams();
 
@@ -24,6 +27,37 @@ const OrderDetails = () => {
             });
         }
     }, [error, id])
+
+    // React to cancel results
+    useEffect(() => {
+        if (cancelError) {
+            toast.error(cancelError, { position: 'bottom-right' })
+            dispatch(clearErrors())
+        }
+        if (isCancelled) {
+            toast.success('Order cancelled — stock has been restored', { position: 'bottom-right' })
+            dispatch({ type: CANCEL_ORDER_RESET })
+            dispatch(getOrderDetails(id))
+        }
+    }, [cancelError, isCancelled, dispatch, id])
+
+    const cancelHandler = () => {
+        Swal.fire({
+            title: 'Cancel Order?',
+            text: 'This will cancel your pending order and return the items to stock.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3b3b',
+            cancelButtonColor: '#3f3f46',
+            confirmButtonText: 'Yes, cancel it',
+            background: '#141414',
+            color: '#fafafa'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                dispatch(cancelOrder(id))
+            }
+        })
+    }
 
     const shippingDetails = shippingInfo && `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}, ${shippingInfo.country}`
 
@@ -56,7 +90,21 @@ const OrderDetails = () => {
 
 
                             <h4 className="my-4">Order Status:</h4>
-                            <p className={order.orderStatus && String(order.orderStatus).includes('Delivered') ? "greenColor" : "redColor"} ><b>{orderStatus}</b></p>
+                            <p className={
+                                orderStatus === 'Delivered' ? "greenColor"
+                                    : orderStatus === 'Cancelled' ? "redColor"
+                                        : "orangeColor"
+                            }><b>{orderStatus}</b></p>
+
+                            {orderStatus === 'Pending' && (
+                                <button
+                                    className="btn btn-danger btn-sm mb-3"
+                                    onClick={cancelHandler}
+                                    disabled={loading}
+                                >
+                                    Cancel This Order
+                                </button>
+                            )}
 
 
                             <h4 className="my-4">Order Items:</h4>

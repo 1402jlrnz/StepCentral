@@ -20,6 +20,9 @@ import {
     DELETE_ORDER_SUCCESS,
     DELETE_ORDER_RESET,
     DELETE_ORDER_FAIL,
+    CANCEL_ORDER_REQUEST,
+    CANCEL_ORDER_SUCCESS,
+    CANCEL_ORDER_FAIL,
     CLEAR_ERRORS
 } from '../constants/orderConstants'
 
@@ -127,6 +130,28 @@ export const deleteOrder = (id) => async (dispatch) => {
         dispatch({
             type: DELETE_ORDER_FAIL,
             payload: error?.response?.data?.message || 'Delete failed'
+        })
+    }
+}
+
+export const cancelOrder = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: CANCEL_ORDER_REQUEST })
+        const config = {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        }
+        const { data } = await axios.put(`${import.meta.env.VITE_API}/order/${id}/cancel`, {}, config)
+        dispatch({
+            type: CANCEL_ORDER_SUCCESS,
+            payload: data.order
+        })
+    } catch (error) {
+        dispatch({
+            type: CANCEL_ORDER_FAIL,
+            payload: error?.response?.data?.message || 'Cancel failed'
         })
     }
 }

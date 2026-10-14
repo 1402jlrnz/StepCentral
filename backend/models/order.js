@@ -28,31 +28,6 @@ const orderSchema = mongoose.Schema({
         required: true,
         ref: 'User'
     },
-    orderItems: [
-        {
-            name: {
-                type: String,
-                required: true
-            },
-            quantity: {
-                type: Number,
-                required: true
-            },
-            image: {
-                type: String,
-                required: true
-            },
-            price: {
-                type: Number,
-                required: true
-            },
-            product: {
-                type: mongoose.Schema.Types.ObjectId,
-                required: true,
-                ref: 'Product'
-            }
-        }
-    ],
     paymentInfo: {
         id: {
             type: String
@@ -62,7 +37,11 @@ const orderSchema = mongoose.Schema({
         },
         method: {
             type: String,
-            default: 'COD'
+            default: 'COD',
+            enum: ['COD', 'GCash']
+        },
+        reference: {
+            type: String
         }
     },
     paidAt: {
@@ -92,7 +71,11 @@ const orderSchema = mongoose.Schema({
     orderStatus: {
         type: String,
         required: true,
-        default: 'Processing'
+        enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
+        default: 'Pending'
+    },
+    dateReceived: {
+        type: Date
     },
     deliveredAt: {
         type: Date
@@ -103,5 +86,18 @@ const orderSchema = mongoose.Schema({
     }
 
 })
+
+// Virtual populate: order line items live in their own `orderdetails`
+// collection (PrestigePerf-style order + order_details normalization).
+// Named `orderItems` so all existing consumers keep working.
+orderSchema.virtual('orderItems', {
+    ref: 'OrderDetail',
+    localField: '_id',
+    foreignField: 'orderId'
+});
+
+// Ensure virtuals are included in JSON
+orderSchema.set('toJSON', { virtuals: true });
+orderSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Order', orderSchema)

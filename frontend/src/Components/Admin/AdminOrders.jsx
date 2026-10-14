@@ -19,7 +19,7 @@ const AdminOrders = () => {
     const [statusEdits, setStatusEdits] = useState({})
     const [updatingId, setUpdatingId] = useState(null)
 
-    const orderStatuses = ['Processing', 'Shipped', 'Delivered']
+    const orderStatuses = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']
 
     useEffect(() => {
         dispatch(allOrders())
@@ -85,6 +85,9 @@ const AdminOrders = () => {
         switch (status) {
             case 'Delivered': return '#22c55e'
             case 'Shipped': return '#f59e0b'
+            case 'Out for Delivery': return '#38bdf8'
+            case 'Cancelled': return '#ef4444'
+            case 'Pending': return '#a1a1aa'
             default: return '#a1a1aa'
         }
     }

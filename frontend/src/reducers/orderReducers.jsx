@@ -19,8 +19,47 @@ import {
     DELETE_ORDER_SUCCESS,
     DELETE_ORDER_RESET,
     DELETE_ORDER_FAIL,
+    CANCEL_ORDER_REQUEST,
+    CANCEL_ORDER_SUCCESS,
+    CANCEL_ORDER_FAIL,
+    CANCEL_ORDER_RESET,
     CLEAR_ERRORS
 } from '../constants/orderConstants'
+
+export const cancelOrderReducer = (state = {}, action) => {
+    switch (action.type) {
+        case CANCEL_ORDER_REQUEST:
+            return {
+                ...state,
+                loading: true
+            }
+        case CANCEL_ORDER_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                isCancelled: true,
+                order: action.payload
+            }
+        case CANCEL_ORDER_FAIL:
+            return {
+                ...state,
+                loading: false,
+                error: action.payload
+            }
+        case CANCEL_ORDER_RESET:
+            return {
+                ...state,
+                isCancelled: false
+            }
+        case CLEAR_ERRORS:
+            return {
+                ...state,
+                error: null
+            }
+        default:
+            return state
+    }
+}
 
 export const newOrderReducer = (state = {}, action) => {
     switch (action.type) {

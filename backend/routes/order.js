@@ -8,6 +8,7 @@ const {
     deleteOrder,
     allOrders,
     updateOrder,
+    cancelMyOrder,
     totalOrders,
     totalSales,
     customerSales,
@@ -21,6 +22,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth')
 router.post('/order/new', isAuthenticatedUser, newOrder);
 router.get('/orders/me', isAuthenticatedUser, myOrders);
 router.get('/order/:id', isAuthenticatedUser, getSingleOrder);
+router.put('/order/:id/cancel', isAuthenticatedUser, cancelMyOrder);
 router.get('/admin/orders', isAuthenticatedUser, authorizeRoles('admin'), allOrders);
 router.route('/admin/order/:id')
     .put(isAuthenticatedUser, authorizeRoles('admin'), updateOrder)
